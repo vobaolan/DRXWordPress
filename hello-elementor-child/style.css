@@ -1,0 +1,46 @@
+/*
+Theme Name: Hello Elementor Child - DRX Official Store
+Theme URI: https://teamdrx.vercel.app/store
+Description: Theme con tùy biến cho DRX Esports Official Store & Roster Hub. Tích hợp WooCommerce, Băng chuyền Trending Now, Quick Buy Modal may tên áo đấu và Tra cứu đơn hàng.
+Author: DRX Esports Dev Team (VLSC.V6)
+Author URI: https://teamdrx.vercel.app/
+Template: hello-elementor
+Version: 1.0.0
+Requires at least: 6.0
+Requires PHP: 7.4
+License: GNU General Public License v2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: hello-elementor-child
+Tags: e-commerce, custom-post-types, responsive-layout, block-patterns, esports, woocommerce
+*/
+
+/* ==========================================================================
+   DRX GLOBAL CSS VARIABLES & BASE RESETS
+   ========================================================================== */
+
+:root {
+	--drx-accent: #0052FF;
+	--drx-accent-secondary: #00D4FF;
+	--drx-accent-hover: #0040CC;
+	--drx-bg-main: #FFFFFF;
+	--drx-bg-card: #FFFFFF;
+	--drx-bg-subtle: #F8FAFC;
+	--drx-border-color: #E2E8F0;
+	--drx-text-primary: #0F172A;
+	--drx-text-secondary: #475569;
+	--drx-text-muted: #94A3B8;
+	--drx-font-heading: 'Orbitron', -apple-system, BlinkMacSystemFont, sans-serif;
+	--drx-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+	--drx-shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+	--drx-shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+	--drx-shadow-lg: 0 10px 25px rgba(0, 82, 255, 0.08);
+	--drx-shadow-accent: 0 8px 20px rgba(0, 82, 255, 0.25);
+}
+
+body {
+	font-family: var(--drx-font-sans);
+	color: var(--drx-text-primary);
+	background-color: var(--drx-bg-main);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}

@@ -1,0 +1,67 @@
+# ==============================================================================
+# WordPress & DRX Theme .gitignore
+# ==============================================================================
+
+# Readme and markdown docs
+README.md
+*.md
+
+# Lecture, Notes, Skills, and Docs directories
+BaiGiang/
+baigiang/
+skills/
+docs/
+
+# Document & Presentation files
+*.docx
+*.doc
+*.pdf
+*.pptx
+*.ppt
+*.xlsx
+*.xls
+*.odt
+*.rtf
+
+# Temporary & AI generated directories
+.gemini/
+.system_generated/
+.user_uploaded/
+.tempmediaStorage/
+scratch/
+
+# Operating System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Logs and Database dumps
+*.log
+*.sql
+*.sqlite
+
+# Temporary & Backup files
+*.tmp
+*.bak
+*.swp
+*~
+.cache/
+
+# Node modules & build artifacts
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local environment & IDE configs
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.env
+.env.local
