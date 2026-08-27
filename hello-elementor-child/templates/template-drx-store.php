@@ -119,7 +119,7 @@ $site_logo_url = $custom_logo_id ? wp_get_attachment_image_url($custom_logo_id, 
 ?>
 
 <!-- DRX HEADER (D:\DRX\store.html) -->
-<header>
+<header class="drx-custom-header">
     <div class="logo">
         <a href="<?php echo esc_url(home_url('/')); ?>">
             <img src="<?php echo esc_url($site_logo_url); ?>" alt="<?php bloginfo('name'); ?>">

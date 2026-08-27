@@ -2,20 +2,30 @@
    DRX COMPONENTS CSS - EXACT REPLICA OF D:\DRX\store.html
    ========================================================================== */
 
-/* Header Links & Logo */
-.drx-header, header {
-	display: flex;
+/* Ẩn Header & Footer mặc định của theme cha Hello Elementor */
+#site-header,
+.site-header,
+header#site-header,
+.hello-header,
+#site-footer,
+.site-footer {
+	display: none !important;
+}
+
+/* Header DRX Store Tùy Biến */
+.drx-custom-header, header:not(#site-header) {
+	display: flex !important;
 	justify-content: space-between;
 	align-items: center;
-	padding: 24px 40px;
+	padding: 20px 40px;
 	background: #FFFFFF;
 	border-bottom: 1px solid var(--border-color);
 	position: sticky;
 	top: 0;
 	z-index: 100;
 }
-.drx-logo img, header .logo img {
-	height: 38px;
+.drx-custom-header .logo img, header:not(#site-header) .logo img {
+	height: 36px;
 	width: auto;
 	display: block;
 }
