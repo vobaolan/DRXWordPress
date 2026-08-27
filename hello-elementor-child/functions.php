@@ -105,3 +105,10 @@ function drx_inject_chatbot_embed_code() {
     <?php
 }
 add_action('wp_footer', 'drx_inject_chatbot_embed_code', 99);
+
+/**
+ * 5. Tắt Header & Footer & Page Title mặc định của theme cha Hello Elementor
+ */
+add_filter('hello_elementor_display_header_footer', '__return_false');
+add_filter('hello_elementor_page_title', '__return_false');
+
