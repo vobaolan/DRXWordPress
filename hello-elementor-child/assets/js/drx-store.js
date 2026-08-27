@@ -199,15 +199,15 @@
 			<div class="m-price" id="m_price_display">USD ${p.price.toFixed(2)}</div>
 			
 			<div class="shipping-info">
-				<div class="s-row"><div class="s-label">Vận chuyển:</div><div>Giao hàng toàn quốc / Quốc tế</div></div>
-				<div class="s-row"><div class="s-label">Đơn vị vận chuyển:</div><div>Giao hàng Hỏa tốc / Tiêu chuẩn</div></div>
-				<div class="s-row"><div class="s-label">Đổi trả:</div><div>Hỗ trợ đổi size trong vòng 7 ngày</div></div>
+				<div class="s-row"><div class="s-label">Domestic / International Shipping</div><div>oversea delivery</div></div>
+				<div class="s-row"><div class="s-label">Payment for Shipping</div><div>Parcel Service</div></div>
+				<div class="s-row"><div class="s-label">Shipping (Charge)</div><div>International Shipping Fee</div></div>
 			</div>
 		`;
 
 		// Colors
 		if (p.colors && p.colors.length > 0) {
-			html += `<div class="attr-row"><div class="attr-label">Màu sắc</div><div class="attr-options" id="colorOptions">`;
+			html += `<div class="attr-row"><div class="attr-label">Color</div><div class="attr-options" id="colorOptions">`;
 			p.colors.forEach(c => {
 				const isSel = selectedColor === c ? 'selected' : '';
 				html += `<button type="button" class="attr-btn ${isSel}" data-color="${c}">${c}</button>`;
@@ -217,7 +217,8 @@
 
 		// Sizes
 		if (p.sizes && p.sizes.length > 0) {
-			html += `<div class="attr-row"><div class="attr-label">Kích cỡ</div><div class="attr-options dashed" id="sizeOptions">`;
+			const isDashed = p.sizes.some(s => s.length <= 4) ? 'dashed' : '';
+			html += `<div class="attr-row"><div class="attr-label">Size</div><div class="attr-options ${isDashed}" id="sizeOptions">`;
 			p.sizes.forEach(s => {
 				const isSel = selectedSize === s ? 'selected' : '';
 				html += `<button type="button" class="attr-btn ${isSel}" data-size="${s}">${s}</button>`;
@@ -229,8 +230,8 @@
 		if (p.allow_custom_id) {
 			html += `
 				<div class="attr-row" style="margin-top: 14px; grid-template-columns: 1fr;">
-					<div class="attr-label" style="margin-bottom: 6px;">Tên / In-Game ID may lên áo (Tùy chọn):</div>
-					<input type="text" id="m_custom_id" placeholder="VD: FAKER, DEFT, TÊN BẠN..." style="width:100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-family: var(--font-sans); font-size: 14px; outline: none; font-weight: 600; text-transform: uppercase;">
+					<div class="attr-label" style="margin-bottom: 6px;">Custom Embroidered Name / ID (Optional):</div>
+					<input type="text" id="m_custom_id" placeholder="Enter custom name (e.g. DEFT, FAKER)..." style="width:100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-family: var(--font-sans); font-size: 14px; outline: none; font-weight: 600; text-transform: uppercase;">
 				</div>
 			`;
 		}
@@ -238,7 +239,7 @@
 		// Quantity Stepper
 		html += `
 			<div class="qty-row">
-				<div style="font-weight: 600; color: var(--text-secondary);">TỔNG CỘNG:</div>
+				<div class="total-calc" style="font-weight: 400; color: var(--text-secondary);">total</div>
 				<div style="display:flex; align-items:center; gap:20px;">
 					<div class="m-price" id="calcPrice" style="margin-bottom:0; font-size: 18px;">USD ${(p.price * currentQty).toFixed(2)}</div>
 					<div class="qty-controls">
@@ -250,8 +251,8 @@
 			</div>
 			
 			<div class="modal-btn-group">
-				<button type="button" class="btn-add-cart" id="btnModalAddCart" disabled>THÊM VÀO GIỎ</button>
-				<button type="button" class="btn-buy-now" id="btnModalBuyNow" disabled>MUA NGAY</button>
+				<button type="button" class="btn-add-cart" id="btnModalAddCart" disabled>ADD TO CART</button>
+				<button type="button" class="btn-buy-now" id="btnModalBuyNow" disabled>BUY NOW</button>
 			</div>
 		`;
 
@@ -325,15 +326,15 @@
 			if (matchingVariant && matchingVariant.images && matchingVariant.images.length > 0) {
 				$('#m_img').attr('src', matchingVariant.images[0]);
 			}
-			$addBtn.text('THÊM VÀO GIỎ').prop('disabled', false);
-			$buyBtn.text('MUA NGAY').prop('disabled', false);
+			$addBtn.text('ADD TO CART').prop('disabled', false);
+			$buyBtn.text('BUY NOW').prop('disabled', false);
 		} else {
 			if (isComplete) {
-				$addBtn.text('HẾT HÀNG').prop('disabled', true);
-				$buyBtn.text('HẾT HÀNG').prop('disabled', true);
+				$addBtn.text('SOLD OUT').prop('disabled', true);
+				$buyBtn.text('SOLD OUT').prop('disabled', true);
 			} else {
-				$addBtn.text('CHỌN TÙY CHỌN').prop('disabled', true);
-				$buyBtn.text('CHỌN TÙY CHỌN').prop('disabled', true);
+				$addBtn.text('SELECT OPTIONS').prop('disabled', true);
+				$buyBtn.text('SELECT OPTIONS').prop('disabled', true);
 			}
 		}
 	}
@@ -353,7 +354,7 @@
 		const productId = currentProductData.id;
 
 		const $btn = redirectCheckout ? $('#btnModalBuyNow') : $('#btnModalAddCart');
-		$btn.text('ĐANG XỬ LÝ...').prop('disabled', true);
+		$btn.text('PROCESSING...').prop('disabled', true);
 
 		$.ajax({
 			url: drx_ajax_obj.ajax_url,
@@ -378,13 +379,13 @@
 						openCart();
 					}
 				} else {
-					alert(res.data ? res.data.message : 'Lỗi khi thêm vào giỏ hàng');
+					alert(res.data ? res.data.message : 'Error adding to cart');
 				}
-				$btn.text(redirectCheckout ? 'MUA NGAY' : 'THÊM VÀO GIỎ').prop('disabled', false);
+				$btn.text(redirectCheckout ? 'BUY NOW' : 'ADD TO CART').prop('disabled', false);
 			},
 			error: function () {
-				alert('Lỗi kết nối máy chủ.');
-				$btn.text(redirectCheckout ? 'MUA NGAY' : 'THÊM VÀO GIỎ').prop('disabled', false);
+				alert('Server connection error.');
+				$btn.text(redirectCheckout ? 'BUY NOW' : 'ADD TO CART').prop('disabled', false);
 			}
 		});
 	}

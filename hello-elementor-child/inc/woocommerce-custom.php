@@ -190,7 +190,7 @@ function drx_ajax_add_to_cart() {
         }
     }
 
-    wp_send_json_error(array('message' => 'Không thể thêm sản phẩm vào giỏ hàng.'));
+    wp_send_json_error(array('message' => 'Unable to add product to cart.'));
 }
 add_action('wp_ajax_drx_add_to_cart', 'drx_ajax_add_to_cart');
 add_action('wp_ajax_nopriv_drx_add_to_cart', 'drx_ajax_add_to_cart');
@@ -205,18 +205,18 @@ function drx_ajax_track_order() {
     $order_id_input = isset($_POST['order_id']) ? sanitize_text_field(trim($_POST['order_id'])) : '';
 
     if (empty($phone) || empty($order_id_input)) {
-        wp_send_json_error(array('message' => 'Vui lòng nhập đầy đủ Số điện thoại và Mã đơn hàng.'));
+        wp_send_json_error(array('message' => 'Please enter both Phone Number and Order ID.'));
     }
 
     // Tách mã số thực tế (nếu nhập DRX-12345 hoặc #12345)
     $clean_order_id = preg_replace('/[^0-9]/', '', $order_id_input);
     if (!$clean_order_id) {
-        wp_send_json_error(array('message' => 'Mã đơn hàng không hợp lệ.'));
+        wp_send_json_error(array('message' => 'Invalid Order ID.'));
     }
 
     $order = wc_get_order((int)$clean_order_id);
     if (!$order) {
-        wp_send_json_error(array('message' => 'Không tìm thấy đơn hàng với mã số này trong hệ thống.'));
+        wp_send_json_error(array('message' => 'No matching order found.'));
     }
 
     // So sánh số điện thoại đặt hàng
@@ -224,7 +224,7 @@ function drx_ajax_track_order() {
     $input_phone_digits = preg_replace('/[^0-9]/', '', $phone);
 
     if ($billing_phone !== $input_phone_digits && !str_ends_with($billing_phone, $input_phone_digits)) {
-        wp_send_json_error(array('message' => 'Số điện thoại không khớp với thông tin đơn hàng này.'));
+        wp_send_json_error(array('message' => 'Phone number does not match this Order ID.'));
     }
 
     // Thu thập danh sách sản phẩm trong đơn hàng

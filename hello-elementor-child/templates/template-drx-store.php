@@ -207,7 +207,7 @@ $site_logo_url = $custom_logo_id ? wp_get_attachment_image_url($custom_logo_id, 
                     <?php endforeach; ?>
                 <?php else : ?>
                     <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
-                        <?php _e('Chưa có sản phẩm nào trong cửa hàng.', 'hello-elementor-child'); ?>
+                        <?php _e('No products found in the store.', 'hello-elementor-child'); ?>
                     </div>
                 <?php endif; ?>
             </div>
