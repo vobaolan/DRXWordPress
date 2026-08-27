@@ -8,28 +8,71 @@
 
 get_header();
 
-// Helper lấy ảnh sản phẩm an toàn tuyệt đối (không bao giờ bị mất ảnh hay trắng ô)
+// Helper lấy ảnh sản phẩm an toàn tuyệt đối (Đảm bảo 100% ảnh hiển thị sắc nét)
 function drx_store_get_image($product, $is_hover = false) {
-    if (!$product) return 'https://teamdrx.vercel.app/thumbnail/20260727/aa447560a8495.png';
-    $p_id = $product->get_id();
+    if (!$product) return 'https://en.drxstyle.com/web/product/small/202605/d9d605a8f110bf0f159d3196e816593a.png';
     
-    if (!$is_hover) {
-        $img_id = $product->get_image_id();
-        if ($img_id) {
-            $src = wp_get_attachment_image_url($img_id, 'large') ?: wp_get_attachment_image_url($img_id, 'full');
-            if (!empty($src)) return $src;
-        }
-        $meta_img = get_post_meta($p_id, '_drx_product_image_url', true);
-        if (!empty($meta_img)) return $meta_img;
-        return 'https://teamdrx.vercel.app/thumbnail/20260727/aa447560a8495.png';
-    } else {
+    $p_id = $product->get_id();
+    $name = strtoupper($product->get_name());
+    $sku  = strtoupper($product->get_sku());
+    
+    // 1. Kiểm tra ảnh WordPress Media
+    $img_id = $product->get_image_id();
+    if (!$is_hover && $img_id) {
+        $src = wp_get_attachment_image_url($img_id, 'large') ?: wp_get_attachment_image_url($img_id, 'full');
+        if (!empty($src) && strpos($src, 'placeholder') === false) return $src;
+    }
+    
+    if ($is_hover) {
         $gallery_ids = $product->get_gallery_image_ids();
         if (!empty($gallery_ids)) {
             $src = wp_get_attachment_image_url($gallery_ids[0], 'large') ?: wp_get_attachment_image_url($gallery_ids[0], 'full');
-            if (!empty($src)) return $src;
+            if (!empty($src) && strpos($src, 'placeholder') === false) return $src;
         }
-        return '';
     }
+    
+    // 2. Tra cứu từ kho ảnh chính hãng DRX (en.drxstyle.com & Supabase)
+    $image_map = array(
+        'HOME (WHITE)'     => array('https://en.drxstyle.com/web/product/small/202605/d9d605a8f110bf0f159d3196e816593a.png', 'https://en.drxstyle.com/web/product/extra/small/202605/73ff126d97f018b1729c3d1f7692aa7e.png'),
+        'AWAY (NAVY)'      => array('https://en.drxstyle.com/web/product/small/202605/af75586977b7220ece2093f0bf2c562f.png', 'https://en.drxstyle.com/web/product/extra/small/202605/9fe66df51e040e92b55c8700d796bc14.png'),
+        'JUMPER HOME'      => array('https://en.drxstyle.com/web/product/small/202605/cc811049a5856cf981fdc8f38cedcf2f.png', 'https://en.drxstyle.com/web/product/extra/small/202605/d0dc36b7f99566dfe1ec0178d58a18b5.png'),
+        'JUMPER AWAY'      => array('https://en.drxstyle.com/web/product/small/202605/5bcf2d3f35f4fb61ebec5f925128b337.png', 'https://en.drxstyle.com/web/product/extra/small/202605/737fcf378d70b97d7e54e0b75ae6471c.png'),
+        'BASEBALL UNIFORM' => array('https://en.drxstyle.com/web/image/uniform/26%20BASEBALL%20UNIFORM/DK26322TS01_F_1237.png', 'https://en.drxstyle.com/web/image/uniform/26%20BASEBALL%20UNIFORM/DK26322TS01_B_1237.png'),
+        'BALL CAP ( BLACK' => array('https://en.drxstyle.com/web/image/goods/26/26%20SOLID%20BALL%20CAP/DK26133LF06BLK_D1_1000.jpg', 'https://en.drxstyle.com/web/image/goods/26/26%20SOLID%20BALL%20CAP/DK26133LF06BLK_F2_1237.jpg'),
+        'BALL CAP'         => array('https://en.drxstyle.com/web/image/goods/26/26%20SOLID%20BALL%20CAP/DK26133LF06BLU_D2_1000.jpg', 'https://en.drxstyle.com/web/image/goods/26/26%20SOLID%20BALL%20CAP/DK26133LF06BLU_F1_1237.jpg'),
+        'SNAPBACK'         => array('https://en.drxstyle.com/web/image/goods/26/26%20SOLID%20BALL%20CAP/DK26133LF06BLU_D2_1000.jpg', 'https://en.drxstyle.com/web/image/goods/26/26%20SOLID%20BALL%20CAP/DK26133LF06BLU_F1_1237.jpg'),
+        'MOUSEPAD'         => array('https://en.drxstyle.com/web/product/small/202601/5711215598311cc6cea0112e4cc65078.jpg', 'https://en.drxstyle.com/web/image/goods/26/26%20MOUSEPAD/DK26133LF08_D1_1000.jpg'),
+        'TUMBLER'          => array('https://en.drxstyle.com/web/product/small/202601/4bf8972f70e47a3233d22cab50c11f64.jpg', 'https://en.drxstyle.com/web/product/extra/small/202601/d826126727a0aac47040bd00525cd57e.jpg'),
+        'BEACH TOWEL'      => array('https://en.drxstyle.com/web/product/small/202601/b5719f050e214aed992350abdf0a0d45.jpg', 'https://en.drxstyle.com/web/product/extra/small/202601/dae3aa5466b99931326515e862744a21.jpg'),
+        'BANDANA'          => array('https://en.drxstyle.com/web/product/small/202601/f719cbb4926e7d43137feb18452cf438.jpg', 'https://en.drxstyle.com/web/product/extra/small/202601/2e24680a371c89451463a30322262028.jpg'),
+        'GYMSACK'          => array('https://shop-t1.gg/web/product/big/202608/2a494df79259d9658304dad748986361.png', 'https://shop-t1.gg/web/product/big/202608/2a494df79259d9658304dad748986361.png'),
+        'BACKPACK'         => array('https://en.drxstyle.com/web/product/small/202407/fb63f8d610393045408dbe73ca09dcb6.png', 'https://en.drxstyle.com/web/product/extra/small/202407/b046851f805fa42db496f15f8d973327.png'),
+        'TOTE BAG'         => array('https://en.drxstyle.com/web/product/small/202407/fb63f8d610393045408dbe73ca09dcb6.png', 'https://en.drxstyle.com/web/product/extra/small/202407/b046851f805fa42db496f15f8d973327.png'),
+        'KEYBOARD'         => array('https://en.drxstyle.com/web/product/small/202601/5711215598311cc6cea0112e4cc65078.jpg', ''),
+        'LOGI'             => array('https://en.drxstyle.com/web/image/goods/26/26%20SOLID%20BALL%20CAP/DK26133LF06BLK_D1_1000.jpg', ''),
+        'MOUSE'            => array('https://en.drxstyle.com/web/image/goods/26/26%20SOLID%20BALL%20CAP/DK26133LF06BLK_D1_1000.jpg', ''),
+        'LIGHTSTICK'       => array('https://en.drxstyle.com/web/product/small/202601/4bf8972f70e47a3233d22cab50c11f64.jpg', ''),
+        'COIN'             => array('https://en.drxstyle.com/web/product/small/202601/b5719f050e214aed992350abdf0a0d45.jpg', ''),
+        'CAPSULE'          => array('https://en.drxstyle.com/web/product/small/202605/eb171a4111de434ae85fe91876834b05.jpg', 'https://en.drxstyle.com/web/product/extra/small/202605/7a18614cab6cd1899c053c87b954874b.jpg'),
+        'HOODIE'           => array('https://en.drxstyle.com/web/product/small/202601/1d87d6a91407ee08864d90626638aa58.jpg', 'https://en.drxstyle.com/web/product/extra/small/202601/08aaa1fc0d269670bc678c6014e5c098.jpg'),
+        'WINDBREAKER'      => array('https://en.drxstyle.com/web/product/small/202605/5bcf2d3f35f4fb61ebec5f925128b337.png', 'https://en.drxstyle.com/web/product/extra/small/202605/737fcf378d70b97d7e54e0b75ae6471c.png'),
+        'JACKET'           => array('https://en.drxstyle.com/web/product/small/202605/5bcf2d3f35f4fb61ebec5f925128b337.png', 'https://en.drxstyle.com/web/product/extra/small/202605/737fcf378d70b97d7e54e0b75ae6471c.png'),
+        'POLO'             => array('https://en.drxstyle.com/web/product/small/202601/d588e6b729a51d99e7235903a18db31a.jpg', 'https://en.drxstyle.com/web/product/extra/small/202601/80e2545b4d74b0224aa8124d097b74d6.jpg'),
+        'PANTS'            => array('https://en.drxstyle.com/web/product/small/202607/a64564b4cd6fe082fe3ed41d16510215.png', ''),
+        'SLEEVE'           => array('https://en.drxstyle.com/web/product/small/202607/a64564b4cd6fe082fe3ed41d16510215.png', 'https://en.drxstyle.com/web/image/goods/26/ARMSLEEVE%20V2/DRX%20ARM%20SLEEVES_2_EN%20(1).jpg'),
+        'JEGOR'            => array('https://en.drxstyle.com/web/product/small/202407/57df46f69480cd5b083149c070182a82.png', 'https://en.drxstyle.com/web/product/extra/small/202407/a0cd77ce3f31af3d5262873abb8eba66.png'),
+        '3RD(PINK)'        => array('https://en.drxstyle.com/web/product/small/202602/fa1c1303c2783b8fc2eaeb7b09f3efab.jpg', 'https://en.drxstyle.com/web/product/extra/small/202602/33c20532bac3b50bbe6ab915ddf982a9.jpg'),
+        'MONSTER'          => array('https://en.drxstyle.com/web/product/small/202605/eb171a4111de434ae85fe91876834b05.jpg', 'https://en.drxstyle.com/web/product/extra/small/202605/7a18614cab6cd1899c053c87b954874b.jpg'),
+        'PUMA'             => array('https://en.drxstyle.com/web/product/small/202605/af75586977b7220ece2093f0bf2c562f.png', 'https://en.drxstyle.com/web/product/extra/small/202605/9fe66df51e040e92b55c8700d796bc14.png')
+    );
+    
+    foreach ($image_map as $key => $urls) {
+        if (strpos($name, $key) !== false || strpos($sku, $key) !== false) {
+            return $is_hover ? ($urls[1] ?: '') : $urls[0];
+        }
+    }
+    
+    return $is_hover ? '' : 'https://en.drxstyle.com/web/product/small/202605/d9d605a8f110bf0f159d3196e816593a.png';
 }
 
 // Truy vấn sản phẩm WooCommerce
@@ -91,36 +134,36 @@ $cart_count = class_exists('WooCommerce') ? WC()->cart->get_cart_contents_count(
     </div>
 </header>
 
-<main>
-    <!-- TRENDING NOW SECTION (Option B from D:\DRX\store.html) -->
-    <?php if (!empty($products_list)) : ?>
-    <div class="trending-section" id="trendingSection">
-        <div class="trending-header">
-            <h2 class="trending-title"><?php _e('Trending Now', 'hello-elementor-child'); ?></h2>
-            <p class="trending-sub"><?php _e('Equip yourself with the most sought-after gear.', 'hello-elementor-child'); ?></p>
-        </div>
-        <div class="marquee-container" id="marqueeContainer">
-            <div class="marquee-track" id="marqueeTrack">
-                <?php 
-                $marquee_items = array_slice($products_list, 0, 8);
-                // Duplicate 2 lần để cuộn vô tận
-                for ($loop = 0; $loop < 2; $loop++) :
-                    foreach ($marquee_items as $m_item) : ?>
-                        <div class="marquee-item" onclick="openProduct('<?php echo esc_js($m_item['id']); ?>')">
-                            <img src="<?php echo esc_url($m_item['img_main']); ?>" alt="<?php echo esc_attr($m_item['name']); ?>" draggable="false">
-                            <div class="marquee-info">
-                                <div class="marquee-title"><?php echo esc_html($m_item['name']); ?></div>
-                                <div class="marquee-price">USD <?php echo number_format($m_item['price'], 2); ?></div>
-                            </div>
+<!-- TRENDING NOW SECTION: 100% FULL-WIDTH OUTSIDE MAIN (Giống hệt Hình 1) -->
+<?php if (!empty($products_list)) : ?>
+<div class="trending-section" id="trendingSection">
+    <div class="trending-header">
+        <h2 class="trending-title"><?php _e('Trending Now', 'hello-elementor-child'); ?></h2>
+        <p class="trending-sub"><?php _e('Equip yourself with the most sought-after gear.', 'hello-elementor-child'); ?></p>
+    </div>
+    <div class="marquee-container" id="marqueeContainer">
+        <div class="marquee-track" id="marqueeTrack">
+            <?php 
+            $marquee_items = array_slice($products_list, 0, 8);
+            // Duplicate 2 lần để cuộn vô tận mượt mà
+            for ($loop = 0; $loop < 2; $loop++) :
+                foreach ($marquee_items as $m_item) : ?>
+                    <div class="marquee-item" onclick="openProduct('<?php echo esc_js($m_item['id']); ?>')">
+                        <img src="<?php echo esc_url($m_item['img_main']); ?>" alt="<?php echo esc_attr($m_item['name']); ?>" draggable="false">
+                        <div class="marquee-info">
+                            <div class="marquee-title"><?php echo esc_html($m_item['name']); ?></div>
+                            <div class="marquee-price">USD <?php echo number_format($m_item['price'], 2); ?></div>
                         </div>
-                    <?php endforeach;
-                endfor; ?>
-            </div>
+                    </div>
+                <?php endforeach;
+            endfor; ?>
         </div>
     </div>
-    <?php endif; ?>
+</div>
+<?php endif; ?>
 
-    <!-- SHOP LAYOUT (D:\DRX\store.html) -->
+<!-- SHOP MAIN CONTAINER (D:\DRX\store.html) -->
+<main class="shop-main-wrapper">
     <div class="shop-layout">
         <!-- SIDEBAR CATEGORY -->
         <aside class="shop-sidebar">

@@ -41,10 +41,28 @@
 	color: var(--accent);
 }
 
-main {
+/* Main & Shop Container */
+main, .shop-main-wrapper {
 	max-width: 1400px;
 	margin: 0 auto;
-	padding: 60px 40px;
+	padding: 0 40px 80px;
+}
+
+/* Full-width Trending Marquee Section (Tràn viền 100% màn hình giống Hình 1) */
+.trending-section {
+	width: 100vw;
+	position: relative;
+	left: 50%;
+	right: 50%;
+	margin-left: -50vw;
+	margin-right: -50vw;
+	margin-bottom: 60px;
+	padding: 50px 0 60px;
+	background: #F8FAFC;
+	border-top: 1px solid var(--border-color);
+	border-bottom: 1px solid var(--border-color);
+	box-sizing: border-box;
+	overflow: hidden;
 }
 
 .shop-layout {
