@@ -30,19 +30,21 @@ function drx_theme_enqueue_scripts() {
         null
     );
 
+    $theme_version = time();
+
     // Enqueue DRX Core CSS & Components CSS
     wp_enqueue_style(
         'drx-core-style',
         get_stylesheet_directory_uri() . '/assets/css/drx-core.css',
         array('hello-elementor-parent-style'),
-        '1.0.0'
+        $theme_version
     );
 
     wp_enqueue_style(
         'drx-components-style',
         get_stylesheet_directory_uri() . '/assets/css/drx-components.css',
         array('drx-core-style'),
-        '1.0.0'
+        $theme_version
     );
 
     // Enqueue DRX JavaScript
@@ -50,7 +52,7 @@ function drx_theme_enqueue_scripts() {
         'drx-store-script',
         get_stylesheet_directory_uri() . '/assets/js/drx-store.js',
         array('jquery'),
-        '1.0.0',
+        $theme_version,
         true
     );
 
@@ -58,7 +60,7 @@ function drx_theme_enqueue_scripts() {
         'drx-track-order-script',
         get_stylesheet_directory_uri() . '/assets/js/drx-track-order.js',
         array('jquery'),
-        '1.0.0',
+        $theme_version,
         true
     );
 

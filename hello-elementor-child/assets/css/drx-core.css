@@ -1,78 +1,185 @@
-/* ==========================================================================
-   DRX CORE STYLES & GLOBAL DESIGN TOKENS
-   ========================================================================== */
-
 :root {
-	--accent: #0052FF;
-	--accent-secondary: #00D4FF;
-	--accent-hover: #0040CC;
-	--bg-main: #FFFFFF;
+	/* Colors */
+	--bg-main: #FAFAFA;
 	--bg-card: #FFFFFF;
-	--bg-subtle: #F8FAFC;
-	--border-color: #E2E8F0;
+	--bg-header: #FFFFFF;
+	
+	/* Text */
 	--text-primary: #0F172A;
-	--text-secondary: #475569;
+	--text-secondary: #64748B;
 	--text-muted: #94A3B8;
+	
+	/* Accent */
+	--accent: #0052FF;
+	--accent-secondary: #4D7CFF;
+	--accent-fg: #FFFFFF;
+	
+	/* Borders & Shadows */
+	--border-color: #E2E8F0;
+	--shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+	--shadow-md: 0 4px 6px rgba(0,0,0,0.05);
+	--shadow-lg: 0 10px 15px rgba(0,0,0,0.04);
+	--shadow-xl: 0 20px 25px rgba(0,0,0,0.03);
+	--shadow-accent: 0 4px 14px rgba(0,82,255,0.25);
+	
+	/* Typography */
+	--font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 	--font-heading: 'Orbitron', -apple-system, BlinkMacSystemFont, sans-serif;
-	--font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-	--shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-	--shadow-md: 0 4px 12px rgba(0,0,0,0.06);
-	--shadow-lg: 0 10px 25px rgba(0, 82, 255, 0.08);
-	--shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.12);
-	--shadow-accent: 0 8px 20px rgba(0, 82, 255, 0.25);
 }
 
 * {
-	box-sizing: border-box;
 	margin: 0;
 	padding: 0;
+	box-sizing: border-box;
 }
 
 body {
-	font-family: var(--font-sans);
-	color: var(--text-primary);
 	background-color: var(--bg-main);
-	line-height: 1.6;
-}
-
-h1, h2, h3, h4, h5, h6 {
-	font-family: var(--font-heading);
 	color: var(--text-primary);
-	letter-spacing: 0.5px;
+	font-family: var(--font-sans);
+	min-height: 100vh;
+	overflow-x: hidden;
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-	width: 8px;
-	height: 8px;
-}
-::-webkit-scrollbar-track {
-	background: #F1F5F9;
-}
-::-webkit-scrollbar-thumb {
-	background: #CBD5E1;
-	border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-	background: var(--accent);
+button, .size-cb, .nav-item, .attr-btn {
+	user-select: none;
 }
 
-/* Badges */
-.drx-badge-custom-id {
-	display: inline-block;
-	background: rgba(0, 82, 255, 0.1);
-	color: var(--accent);
-	font-size: 11px;
+/* Cart Sidebar Overlay & Drawer */
+.cart-sidebar-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background: rgba(0,0,0,0.5);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.3s ease;
+	z-index: 1000;
+}
+.cart-sidebar-overlay.active {
+	opacity: 1;
+	pointer-events: auto;
+}
+.cart-sidebar {
+	position: fixed;
+	top: 0;
+	right: -400px;
+	width: 400px;
+	height: 100vh;
+	background: #ffffff;
+	box-shadow: -5px 0 20px rgba(0,0,0,0.1);
+	transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+	z-index: 1001;
+	display: flex;
+	flex-direction: column;
+	max-width: 100vw;
+}
+.cart-sidebar.active {
+	right: 0;
+}
+.cart-header {
+	padding: 24px;
+	border-bottom: 1px solid var(--border-color);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+.cart-header h3 {
+	margin: 0;
+	font-size: 20px;
+	color: var(--text-primary);
+	font-family: var(--font-heading);
 	font-weight: 700;
-	padding: 2px 8px;
-	border-radius: 4px;
-	letter-spacing: 0.5px;
-	margin-top: 4px;
 }
-
-/* Container */
-.drx-container {
-	max-width: 1400px;
-	margin: 0 auto;
-	padding: 0 24px;
+.cart-close {
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: var(--text-muted);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.cart-close:hover {
+	color: var(--text-primary);
+}
+.cart-body {
+	flex: 1;
+	overflow-y: auto;
+	padding: 24px;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+.cart-item {
+	display: flex;
+	gap: 16px;
+	padding-bottom: 16px;
+	border-bottom: 1px solid var(--border-color);
+}
+.cart-item-img {
+	width: 80px;
+	height: 80px;
+	background: #f1f5f9;
+	border-radius: 8px;
+	object-fit: contain;
+}
+.cart-item-details {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+}
+.cart-item-title {
+	font-weight: 600;
+	color: var(--text-primary);
+	font-size: 14px;
+	margin-bottom: 4px;
+}
+.cart-item-meta {
+	font-size: 12px;
+	color: var(--text-muted);
+	margin-bottom: auto;
+}
+.cart-item-bottom {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-top: 8px;
+}
+.cart-footer {
+	padding: 24px;
+	border-top: 1px solid var(--border-color);
+	background: #f8fafc;
+}
+.cart-total-row {
+	display: flex;
+	justify-content: space-between;
+	font-weight: 700;
+	font-size: 18px;
+	margin-bottom: 16px;
+	color: var(--text-primary);
+}
+.btn-primary-checkout {
+	display: block;
+	width: 100%;
+	padding: 16px;
+	background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+	color: #FFFFFF;
+	border: none;
+	border-radius: 8px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	font-size: 14px;
+	cursor: pointer;
+	text-align: center;
+	text-decoration: none;
+	box-shadow: var(--shadow-accent);
+	transition: all 0.2s;
+}
+.btn-primary-checkout:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 20px rgba(0,82,255,0.35);
 }

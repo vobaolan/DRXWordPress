@@ -1,5 +1,6 @@
 /**
- * DRX Official Store - Frontend Interactivity & WooCommerce Integration
+ * DRX Official Store - JavaScript & Frontend Interactivity
+ * Matches D:\DRX\store.html exactly while bridging with WordPress & WooCommerce AJAX.
  */
 
 (function ($) {
@@ -18,11 +19,11 @@
 	});
 
 	/* --------------------------------------------------------------------------
-	   1. Trending Now Marquee Auto-Scroll & Drag
+	   1. Trending Now Marquee Auto-Scroll & Drag (from D:\DRX\store.html)
 	   -------------------------------------------------------------------------- */
 	function initMarquee() {
-		const container = document.getElementById('drxMarqueeContainer');
-		const track = document.getElementById('drxMarqueeTrack');
+		const container = document.getElementById('marqueeContainer') || document.getElementById('drxMarqueeContainer');
+		const track = document.getElementById('marqueeTrack') || document.getElementById('drxMarqueeTrack');
 		if (!container || !track) return;
 
 		let isDown = false;
@@ -70,39 +71,45 @@
 	   2. Category & Real-time Search Filtering
 	   -------------------------------------------------------------------------- */
 	function initFilters() {
-		// Category click
 		$('.category-list a').on('click', function (e) {
 			e.preventDefault();
 			$('.category-list a').removeClass('active');
 			$(this).addClass('active');
-
-			const selectedCategory = $(this).data('cat') ? $(this).data('cat').toString().toUpperCase() : 'ALL';
 			filterProducts();
 		});
 
-		// Search input
-		$('#drxSearchInput').on('keyup', function () {
+		$('#searchInput, #drxSearchInput').on('keyup', function () {
 			filterProducts();
 		});
 	}
 
+	window.filterCat = function (cat, el) {
+		$('.category-list a').removeClass('active');
+		if (el) $(el).addClass('active');
+		filterProducts();
+	};
+
+	window.handleSearch = function (val) {
+		filterProducts();
+	};
+
 	function filterProducts() {
-		const query = $('#drxSearchInput').val().toLowerCase().trim();
-		const activeCat = $('.category-list a.active').data('cat');
-		const activeCatUpper = activeCat ? activeCat.toString().toUpperCase() : 'ALL';
+		const query = ($('#searchInput').val() || $('#drxSearchInput').val() || '').toLowerCase().trim();
+		const $activeLink = $('.category-list a.active');
+		const activeText = $activeLink.length ? $activeLink.text().toUpperCase().trim() : 'ALL';
 
 		$('.product-card').each(function () {
 			const $card = $(this);
-			const title = $card.find('.product-title').text().toLowerCase();
+			const title = ($card.find('.product-title').text() || $card.data('name') || '').toLowerCase();
 			const cat = ($card.data('cat') || '').toString().toUpperCase();
 
-			const matchesCategory = (activeCatUpper === 'ALL' || cat.indexOf(activeCatUpper) !== -1);
+			const matchesCategory = (activeText === 'ALL' || cat.indexOf(activeText) !== -1);
 			const matchesQuery = (query === '' || title.indexOf(query) !== -1);
 
 			if (matchesCategory && matchesQuery) {
-				$card.fadeIn(200);
+				$card.show();
 			} else {
-				$card.fadeOut(200);
+				$card.hide();
 			}
 		});
 	}
@@ -111,35 +118,28 @@
 	   3. Quick View Modal & Dynamic Options
 	   -------------------------------------------------------------------------- */
 	function initEventHandlers() {
-		// Open Quick View Modal
-		$(document).on('click', '.drx-open-modal, .product-card', function (e) {
-			e.preventDefault();
-			const productId = $(this).data('product-id') || $(this).closest('.product-card').data('product-id');
-			if (productId) {
-				openQuickView(productId);
+		// Close modal on click outside
+		$('#variantModal').on('click', function (e) {
+			if (e.target === this) {
+				closeVariantModal();
 			}
-		});
-
-		// Close Quick View
-		$('#drxCloseModal, #drxVariantModal').on('click', function (e) {
-			if (e.target === this || $(this).hasClass('close-btn')) {
-				$('#drxVariantModal').removeClass('active');
-			}
-		});
-
-		// Cart Drawer Open/Close
-		$(document).on('click', '.drx-open-cart-trigger', function (e) {
-			e.preventDefault();
-			openCartDrawer();
-		});
-
-		$('#drxCartOverlay, #drxCartClose').on('click', function () {
-			closeCartDrawer();
 		});
 	}
 
+	window.openProduct = function (productId) {
+		openQuickView(productId);
+	};
+
+	window.openVariantSelector = function (productId) {
+		openQuickView(productId);
+	};
+
+	window.closeVariantModal = function () {
+		$('#variantModal').removeClass('active');
+	};
+
 	function openQuickView(productId) {
-		$('#drxVariantModal').addClass('active');
+		$('#variantModal').addClass('active');
 		$('#m_right_content').html('<div style="text-align:center; padding: 40px; color: var(--text-muted);">Đang tải thông tin sản phẩm...</div>');
 
 		$.ajax({
@@ -172,7 +172,7 @@
 
 	function renderModalUI() {
 		const p = currentProductData;
-		const mainImg = p.images && p.images.length > 0 ? p.images[0] : '';
+		const mainImg = p.images && p.images.length > 0 ? p.images[0] : 'https://teamdrx.vercel.app/thumbnail/20260727/aa447560a8495.png';
 		$('#m_img').attr('src', mainImg);
 
 		// Render Thumbnails
@@ -309,7 +309,7 @@
 		if (hasColors && !selectedColor) isComplete = false;
 		if (hasSizes && !selectedSize) isComplete = false;
 
-		if (isComplete) {
+		if (isComplete && p.variants && p.variants.length > 0) {
 			match = p.variants.find(v =>
 				(!hasColors || v.color === selectedColor) &&
 				(!hasSizes || v.size === selectedSize)
@@ -320,9 +320,9 @@
 		const $addBtn = $('#btnModalAddCart');
 		const $buyBtn = $('#btnModalBuyNow');
 
-		if (matchingVariant) {
+		if (matchingVariant || (!hasColors && !hasSizes)) {
 			updateCalculatedPrice();
-			if (matchingVariant.images && matchingVariant.images.length > 0) {
+			if (matchingVariant && matchingVariant.images && matchingVariant.images.length > 0) {
 				$('#m_img').attr('src', matchingVariant.images[0]);
 			}
 			$addBtn.text('THÊM VÀO GIỎ').prop('disabled', false);
@@ -348,8 +348,6 @@
 	   4. AJAX Add to Cart & Cart Drawer
 	   -------------------------------------------------------------------------- */
 	function executeAddToCart(redirectCheckout) {
-		if (!matchingVariant && currentProductData.variants.length > 1) return;
-
 		const customId = $('#m_custom_id').length ? $('#m_custom_id').val().trim() : '';
 		const variationId = matchingVariant ? matchingVariant.id : 0;
 		const productId = currentProductData.id;
@@ -370,14 +368,14 @@
 			},
 			success: function (res) {
 				if (res.success) {
-					$('#drxVariantModal').removeClass('active');
-					$('.drx-cart-count').text(res.data.cart_count);
+					$('#variantModal').removeClass('active');
+					$('#cartCount, .drx-cart-count').text(res.data.cart_count);
 					renderCartDrawerItems(res.data);
 
 					if (redirectCheckout) {
 						window.location.href = res.data.checkout_url || drx_ajax_obj.checkout_url;
 					} else {
-						openCartDrawer();
+						openCart();
 					}
 				} else {
 					alert(res.data ? res.data.message : 'Lỗi khi thêm vào giỏ hàng');
@@ -391,37 +389,35 @@
 		});
 	}
 
-	function openCartDrawer() {
-		$('#drxCartOverlay').addClass('active');
-		$('#drxCartSidebar').addClass('active');
-	}
+	window.openCart = function () {
+		$('#cartOverlay').addClass('active');
+		$('#cartSidebar').addClass('active');
+	};
 
-	function closeCartDrawer() {
-		$('#drxCartOverlay').removeClass('active');
-		$('#drxCartSidebar').removeClass('active');
-	}
+	window.closeCart = function () {
+		$('#cartOverlay').removeClass('active');
+		$('#cartSidebar').removeClass('active');
+	};
 
 	function renderCartDrawerItems(data) {
-		const $body = $('#drxCartBody');
-		const $total = $('#drxCartTotal');
+		const $body = $('#cartBody');
+		const $total = $('#cartTotal');
 
 		if (!data.items || data.items.length === 0) {
-			$body.html('<div class="cart-empty" style="text-align:center; padding: 40px; color: var(--text-muted);">Giỏ hàng của bạn đang trống.</div>');
+			$body.html('<div class="cart-empty" style="text-align:center; padding: 40px; color: var(--text-muted);">Your cart is currently empty.</div>');
 			$total.text('$0.00');
 			return;
 		}
 
 		let html = data.items.map(item => `
-			<div class="cart-item" style="border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 16px; display: flex; gap: 14px;">
-				<div style="width: 70px; height: 70px; background: #F8FAFC; border-radius: 8px; overflow: hidden; flex-shrink: 0;">
-					<img src="${item.image}" style="width: 100%; height: 100%; object-fit: cover;" alt="Product">
-				</div>
-				<div style="flex: 1;">
-					<div style="font-weight: 600; font-size: 13px; color: var(--text-primary); margin-bottom: 2px;">${item.product_name}</div>
-					${item.custom_id ? `<div class="drx-badge-custom-id">ID: ${item.custom_id}</div>` : ''}
-					<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-						<div style="font-size: 12px; color: var(--text-secondary);">Số lượng: <strong>${item.quantity}</strong></div>
-						<div style="font-weight: 700; font-size: 14px; color: var(--accent);">${item.subtotal}</div>
+			<div class="cart-item">
+				<img src="${item.image}" class="cart-item-img" alt="${item.product_name}">
+				<div class="cart-item-details">
+					<div class="cart-item-title">${item.product_name}</div>
+					${item.custom_id ? `<div class="cart-item-meta" style="color: var(--accent); font-weight:600;">Custom ID: ${item.custom_id}</div>` : ''}
+					<div class="cart-item-bottom">
+						<span style="font-size: 13px; color: var(--text-muted);">Qty: ${item.quantity}</span>
+						<span style="font-weight: 700; color: var(--accent); font-size: 14px;">${item.subtotal}</span>
 					</div>
 				</div>
 			</div>
@@ -430,5 +426,96 @@
 		$body.html(html);
 		$total.html(data.cart_total);
 	}
+
+	/* --------------------------------------------------------------------------
+	   5. Track Order Modal Handlers (from D:\DRX\store.html)
+	   -------------------------------------------------------------------------- */
+	window.openTrackOrder = function () {
+		document.getElementById('trackOrderModal').style.display = 'flex';
+		resetTrackOrder();
+	};
+
+	window.closeTrackOrder = function () {
+		document.getElementById('trackOrderModal').style.display = 'none';
+	};
+
+	window.resetTrackOrder = function () {
+		$('#trackPhone').val('');
+		$('#trackOrderId').val('');
+		$('#trackFormArea').show();
+		$('#trackResultArea').hide();
+		$('#trackErrorMsg').hide();
+	};
+
+	window.executeTrackOrder = function () {
+		const phone = $('#trackPhone').val().trim();
+		const orderId = $('#trackOrderId').val().trim().toUpperCase();
+		const $btn = $('#btnTrackOrder');
+		const $errorBox = $('#trackErrorMsg');
+		const $errorText = $('#trackErrorText');
+
+		$errorBox.hide();
+
+		if (!phone || !orderId) {
+			$errorText.text("Please enter both Phone Number and Order ID.");
+			$errorBox.show();
+			return;
+		}
+
+		$btn.text("Searching...").prop('disabled', true);
+
+		$.ajax({
+			url: drx_ajax_obj.ajax_url,
+			type: 'POST',
+			data: {
+				action: 'drx_track_order',
+				phone: phone,
+				order_id: orderId,
+				security: drx_ajax_obj.nonce
+			},
+			success: function (res) {
+				$btn.text("VERIFY & TRACK").prop('disabled', false);
+				if (res.success && res.data) {
+					const order = res.data;
+					const statusClass = order.status.toUpperCase();
+					let statusColor = '#0052FF';
+					if (statusClass.includes('SHIP') || statusClass.includes('COMPLET')) statusColor = '#10B981';
+					if (statusClass.includes('CANCEL')) statusColor = '#EF4444';
+
+					let itemsHtml = (order.items || []).map(it => `
+						<div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;">
+							<span>${it.name} (x${it.qty})</span>
+							<span style="font-weight:600;">${it.subtotal}</span>
+						</div>
+					`).join('');
+
+					$('#trackStatusCard').html(`
+						<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid #E2E8F0; padding-bottom:12px;">
+							<div>
+								<div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">ORDER NUMBER</div>
+								<div style="font-family:var(--font-heading); font-size:16px; font-weight:700; color:var(--text-primary);">${order.order_id}</div>
+							</div>
+							<span style="background:${statusColor}; color:white; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; text-transform:uppercase;">${order.status}</span>
+						</div>
+						<div style="margin-bottom:14px;">${itemsHtml}</div>
+						<div style="border-top:1px solid #E2E8F0; padding-top:10px; display:flex; justify-content:space-between; font-weight:700; font-size:15px;">
+							<span>TOTAL:</span>
+							<span style="color:var(--accent);">${order.total}</span>
+						</div>
+					`);
+					$('#trackFormArea').hide();
+					$('#trackResultArea').show();
+				} else {
+					$errorText.text(res.data ? res.data.message : "No matching order found.");
+					$errorBox.show();
+				}
+			},
+			error: function () {
+				$btn.text("VERIFY & TRACK").prop('disabled', false);
+				$errorText.text("Network error. Please try again.");
+				$errorBox.show();
+			}
+		});
+	};
 
 })(jQuery);
