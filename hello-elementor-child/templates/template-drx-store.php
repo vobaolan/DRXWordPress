@@ -114,13 +114,15 @@ if ($products_query->have_posts()) {
 }
 
 $cart_count = class_exists('WooCommerce') ? WC()->cart->get_cart_contents_count() : 0;
+$custom_logo_id = get_theme_mod('custom_logo');
+$site_logo_url = $custom_logo_id ? wp_get_attachment_image_url($custom_logo_id, 'full') : 'https://teamdrx.vercel.app/thumbnail/20260727/aa447560a8495.png';
 ?>
 
 <!-- DRX HEADER (D:\DRX\store.html) -->
 <header>
     <div class="logo">
         <a href="<?php echo esc_url(home_url('/')); ?>">
-            <img src="https://teamdrx.vercel.app/thumbnail/20260727/aa447560a8495.png" alt="DRX Official Store">
+            <img src="<?php echo esc_url($site_logo_url); ?>" alt="<?php bloginfo('name'); ?>">
         </a>
     </div>
     <div class="header-links">
@@ -217,7 +219,7 @@ $cart_count = class_exists('WooCommerce') ? WC()->cart->get_cart_contents_count(
 <footer class="store-footer">
     <div class="footer-content">
         <div class="footer-brand">
-            <img src="https://teamdrx.vercel.app/thumbnail/20260727/aa447560a8495.png" alt="DRX Logo" class="f-logo">
+            <img src="<?php echo esc_url($site_logo_url); ?>" alt="<?php bloginfo('name'); ?>" class="f-logo">
             <p>DRX Official Store. Equip yourself with the latest authentic gear and join the unbreakable legacy of our champions.</p>
         </div>
         <div class="footer-links">
