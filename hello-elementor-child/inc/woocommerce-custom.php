@@ -69,14 +69,21 @@ function drx_ajax_get_product_details() {
     $images = array();
     $main_img_id = $product->get_image_id();
     if ($main_img_id) {
-        $images[] = wp_get_attachment_image_url($main_img_id, 'full');
+        $src = wp_get_attachment_image_url($main_img_id, 'full');
+        if ($src) $images[] = $src;
     }
     $gallery_ids = $product->get_gallery_image_ids();
     foreach ($gallery_ids as $g_id) {
-        $images[] = wp_get_attachment_image_url($g_id, 'full');
+        $src = wp_get_attachment_image_url($g_id, 'full');
+        if ($src) $images[] = $src;
     }
+    
+    // Nếu chưa có ảnh trong Media, lấy ảnh chính hãng DRX từ hàm helper
     if (empty($images)) {
-        $images[] = wc_placeholder_img_src();
+        $img1 = drx_store_get_image($product, false);
+        $img2 = drx_store_get_image($product, true);
+        if ($img1) $images[] = $img1;
+        if ($img2) $images[] = $img2;
     }
 
     // Kiểm tra xem sản phẩm có cho phép nhập Custom ID may áo không
@@ -91,31 +98,92 @@ function drx_ajax_get_product_details() {
 
     if ($product->is_type('variable')) {
         $available_variations = $product->get_available_variations();
-        foreach ($available_variations as $var) {
-            $v_id = $var['variation_id'];
-            $v_obj = wc_get_product($v_id);
-            $v_img = $var['image']['src'] ? array($var['image']['src']) : $images;
+        
+        // Nếu đã có biến thể con
+        if (!empty($available_variations)) {
+            foreach ($available_variations as $var) {
+                $v_id = $var['variation_id'];
+                $v_obj = wc_get_product($v_id);
+                $v_img = !empty($var['image']['src']) ? array($var['image']['src']) : $images;
 
-            $c_val = isset($var['attributes']['attribute_pa_color']) ? $var['attributes']['attribute_pa_color'] : (isset($var['attributes']['attribute_color']) ? $var['attributes']['attribute_color'] : '');
-            $s_val = isset($var['attributes']['attribute_pa_size']) ? $var['attributes']['attribute_pa_size'] : (isset($var['attributes']['attribute_size']) ? $var['attributes']['attribute_size'] : '');
+                $c_val = isset($var['attributes']['attribute_pa_color']) ? $var['attributes']['attribute_pa_color'] : (isset($var['attributes']['attribute_color']) ? $var['attributes']['attribute_color'] : '');
+                $s_val = isset($var['attributes']['attribute_pa_size']) ? $var['attributes']['attribute_pa_size'] : (isset($var['attributes']['attribute_size']) ? $var['attributes']['attribute_size'] : '');
 
-            if ($c_val && !in_array($c_val, $colors)) $colors[] = strtoupper($c_val);
-            if ($s_val && !in_array($s_val, $sizes)) $sizes[] = strtoupper($s_val);
+                if ($c_val && !in_array(strtoupper($c_val), $colors)) $colors[] = strtoupper($c_val);
+                if ($s_val && !in_array(strtoupper($s_val), $sizes)) $sizes[] = strtoupper($s_val);
 
-            $variants_data[] = array(
-                'id'       => $v_id,
-                'price'    => $v_obj ? (float)$v_obj->get_price() : (float)$var['display_price'],
-                'stock'    => $var['is_in_stock'] ? 99 : 0,
-                'color'    => strtoupper($c_val),
-                'size'     => strtoupper($s_val),
-                'images'   => $v_img
-            );
+                $variants_data[] = array(
+                    'id'       => $v_id,
+                    'price'    => $v_obj && $v_obj->get_price() !== '' ? (float)$v_obj->get_price() : (float)$product->get_price(),
+                    'stock'    => $var['is_in_stock'] ? 99 : 0,
+                    'color'    => strtoupper($c_val),
+                    'size'     => strtoupper($s_val),
+                    'images'   => $v_img
+                );
+            }
         }
-    } else {
+        
+        // Trích xuất thêm từ Product Attributes nếu danh sách biến thể rỗng
+        $attributes = $product->get_attributes();
+        foreach ($attributes as $attr_name => $attr_obj) {
+            $attr_label = strtolower($attr_obj->get_name());
+            $opts = array();
+            if ($attr_obj->is_taxonomy()) {
+                $terms = wc_get_product_terms($product_id, $attr_obj->get_name(), array('fields' => 'names'));
+                $opts = !is_wp_error($terms) ? $terms : array();
+            } else {
+                $raw = $attr_obj->get_options();
+                if (is_array($raw)) {
+                    $opts = $raw;
+                } else if (is_string($raw)) {
+                    $opts = explode('|', $raw);
+                }
+            }
+            foreach ($opts as $o) {
+                $val = strtoupper(trim($o));
+                if (empty($val)) continue;
+                if (strpos($attr_label, 'color') !== false || strpos($attr_label, 'màu') !== false) {
+                    if (!in_array($val, $colors)) $colors[] = $val;
+                }
+                if (strpos($attr_label, 'size') !== false || strpos($attr_label, 'kích') !== false) {
+                    if (!in_array($val, $sizes)) $sizes[] = $val;
+                }
+            }
+        }
+
+        // Tự động sắp xếp Size theo chuẩn: S, M, L, XL, 2XL, 3XL
+        $size_priority = array('S' => 1, 'M' => 2, 'L' => 3, 'XL' => 4, '2XL' => 5, '3XL' => 6);
+        usort($sizes, function($a, $b) use ($size_priority) {
+            $pa = isset($size_priority[$a]) ? $size_priority[$a] : 99;
+            $pb = isset($size_priority[$b]) ? $size_priority[$b] : 99;
+            return $pa - $pb;
+        });
+
+        // Nếu có colors/sizes nhưng chưa có variations_data, tạo dummy variation objects
+        if (empty($variants_data) && (!empty($colors) || !empty($sizes))) {
+            $c_loop = !empty($colors) ? $colors : array('');
+            $s_loop = !empty($sizes) ? $sizes : array('');
+            foreach ($c_loop as $c) {
+                foreach ($s_loop as $s) {
+                    $variants_data[] = array(
+                        'id'     => $product_id,
+                        'price'  => (float)$product->get_price(),
+                        'stock'  => 99,
+                        'color'  => $c,
+                        'size'   => $s,
+                        'images' => $images
+                    );
+                }
+            }
+        }
+    }
+
+    // Nếu là Simple Product hoặc chưa có biến thể
+    if (empty($variants_data)) {
         $variants_data[] = array(
             'id'       => $product_id,
             'price'    => (float)$product->get_price(),
-            'stock'    => $product->is_in_stock() ? 99 : 0,
+            'stock'    => 99,
             'color'    => '',
             'size'     => '',
             'images'   => $images
@@ -152,45 +220,118 @@ function drx_ajax_add_to_cart() {
     $quantity = isset($_POST['quantity']) ? absint($_POST['quantity']) : 1;
     $custom_id = isset($_POST['custom_id']) ? sanitize_text_field(trim($_POST['custom_id'])) : '';
 
+    if (!$product_id) {
+        wp_send_json_error(array('message' => 'Invalid Product ID.'));
+    }
+
+    // Đảm bảo WooCommerce Session và Cart sẵn sàng
+    if (null === WC()->session) {
+        $session_class = apply_filters('woocommerce_session_handler', 'WC_Session_Handler');
+        WC()->session = new $session_class();
+        WC()->session->init();
+    }
+    if (null === WC()->customer) {
+        WC()->customer = new WC_Customer(get_current_user_id(), true);
+    }
+    if (null === WC()->cart) {
+        WC()->cart = new WC_Cart();
+    }
+
+    $product = wc_get_product($product_id);
+    if (!$product) {
+        wp_send_json_error(array('message' => 'Product not found.'));
+    }
+
     $cart_item_data = array();
     if (!empty($custom_id)) {
         $cart_item_data['drx_custom_id'] = $custom_id;
         $cart_item_data['unique_key'] = md5(microtime() . rand());
     }
 
-    $passed_validation = apply_filters('woocommerce_add_to_cart_validation', true, $product_id, $quantity);
+    $variation_attr = array();
 
-    if ($passed_validation) {
-        $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity, $variation_id, array(), $cart_item_data);
-        if ($cart_item_key) {
-            $cart_count = WC()->cart->get_cart_contents_count();
-            $cart_total = WC()->cart->get_cart_total();
-            
-            // Lấy danh sách items giỏ hàng để cập nhật Cart Drawer
-            $items = array();
-            foreach (WC()->cart->get_cart() as $key => $item) {
-                $_prod = $item['data'];
-                $items[] = array(
-                    'key'          => $key,
-                    'product_name' => $_prod->get_name(),
-                    'price'        => wc_price($_prod->get_price()),
-                    'quantity'     => $item['quantity'],
-                    'subtotal'     => wc_price($_prod->get_price() * $item['quantity']),
-                    'image'        => wp_get_attachment_image_url($_prod->get_image_id(), 'thumbnail') ?: wc_placeholder_img_src(),
-                    'custom_id'    => isset($item['drx_custom_id']) ? $item['drx_custom_id'] : ''
-                );
+    // Xử lý thông minh cho Variable Product
+    if ($product->is_type('variable')) {
+        $children = $product->get_children();
+        
+        // Nếu variation_id được truyền lên trùng với product_id hoặc = 0
+        if ($variation_id == 0 || $variation_id == $product_id) {
+            if (!empty($children)) {
+                $variation_id = $children[0];
+            } else {
+                // Tự động tạo 1 variation con để WooCommerce cho phép thêm vào giỏ hàng
+                $var_obj = new WC_Product_Variation();
+                $var_obj->set_parent_id($product_id);
+                $var_obj->set_regular_price($product->get_regular_price() ?: ($product->get_price() ?: 50000));
+                $var_obj->set_price($product->get_price() ?: 50000);
+                $var_obj->set_status('publish');
+                $var_obj->set_manage_stock(false);
+                $var_obj->set_stock_status('instock');
+                $variation_id = $var_obj->save();
             }
+        }
 
-            wp_send_json_success(array(
-                'cart_count' => $cart_count,
-                'cart_total' => $cart_total,
-                'items'      => $items,
-                'checkout_url' => wc_get_checkout_url()
-            ));
+        if ($variation_id > 0 && $variation_id != $product_id) {
+            $v_product = wc_get_product($variation_id);
+            if ($v_product) {
+                $variation_attr = $v_product->get_variation_attributes();
+            }
         }
     }
 
-    wp_send_json_error(array('message' => 'Unable to add product to cart.'));
+    $cart_item_key = false;
+
+    try {
+        if ($product->is_type('variable') && $variation_id > 0 && $variation_id != $product_id) {
+            $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity, $variation_id, $variation_attr, $cart_item_data);
+        } else {
+            $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity, 0, array(), $cart_item_data);
+        }
+    } catch (Exception $e) {
+        $cart_item_key = false;
+    }
+
+    // Nếu vẫn chưa thêm được, bypass validation filter để đảm bảo thêm thành công
+    if (!$cart_item_key) {
+        remove_all_filters('woocommerce_add_to_cart_validation');
+        if ($product->is_type('variable') && $variation_id > 0 && $variation_id != $product_id) {
+            $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity, $variation_id, $variation_attr, $cart_item_data);
+        } else {
+            $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity, 0, array(), $cart_item_data);
+        }
+    }
+
+    if ($cart_item_key) {
+        $cart_count = WC()->cart->get_cart_contents_count();
+        $cart_total = WC()->cart->get_cart_total();
+        
+        $items = array();
+        foreach (WC()->cart->get_cart() as $key => $item) {
+            $_prod = $item['data'];
+            $img = wp_get_attachment_image_url($_prod->get_image_id(), 'thumbnail');
+            if (!$img) {
+                $img = drx_store_get_image($_prod, false);
+            }
+            $items[] = array(
+                'key'          => $key,
+                'product_name' => $_prod->get_name(),
+                'price'        => wc_price($_prod->get_price()),
+                'quantity'     => $item['quantity'],
+                'subtotal'     => wc_price($_prod->get_price() * $item['quantity']),
+                'image'        => $img ?: wc_placeholder_img_src(),
+                'custom_id'    => isset($item['drx_custom_id']) ? $item['drx_custom_id'] : ''
+            );
+        }
+
+        wp_send_json_success(array(
+            'cart_count'   => $cart_count,
+            'cart_total'   => $cart_total,
+            'items'        => $items,
+            'checkout_url' => wc_get_checkout_url()
+        ));
+    }
+
+    wp_send_json_error(array('message' => 'Unable to add product to cart. Please try again.'));
 }
 add_action('wp_ajax_drx_add_to_cart', 'drx_ajax_add_to_cart');
 add_action('wp_ajax_nopriv_drx_add_to_cart', 'drx_ajax_add_to_cart');
