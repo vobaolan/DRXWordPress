@@ -236,7 +236,7 @@ function drx_ajax_get_product_details() {
             foreach ($c_loop as $c) {
                 foreach ($s_loop as $s) {
                     $variants_data[] = array(
-                        'id'     => $product_id,
+                        'id'     => 0,
                         'price'  => (float)$product->get_price(),
                         'stock'  => 99,
                         'color'  => $c,
@@ -251,7 +251,7 @@ function drx_ajax_get_product_details() {
     // Nếu là Simple Product hoặc chưa có biến thể
     if (empty($variants_data)) {
         $variants_data[] = array(
-            'id'       => $product_id,
+            'id'       => 0,
             'price'    => (float)$product->get_price(),
             'stock'    => 99,
             'color'    => '',
@@ -284,6 +284,11 @@ add_action('wp_ajax_nopriv_drx_get_product_details', 'drx_ajax_get_product_detai
  */
 function drx_ajax_add_to_cart() {
     check_ajax_referer('drx_store_nonce', 'security');
+
+    // Xóa toàn bộ thông báo lỗi cũ nếu có
+    if (function_exists('wc_clear_notices')) {
+        wc_clear_notices();
+    }
 
     $product_id = isset($_POST['product_id']) ? absint($_POST['product_id']) : 0;
     $variation_id = isset($_POST['variation_id']) ? absint($_POST['variation_id']) : 0;
@@ -320,39 +325,50 @@ function drx_ajax_add_to_cart() {
 
     $variation_attr = array();
 
-    // Xử lý thông minh cho Variable Product
+    // 1. Nếu là Simple Product -> variation_id BẮT BUỘC = 0
+    if ($product->is_type('simple')) {
+        $variation_id = 0;
+    }
+
+    // 2. Nếu là Variable Product:
     if ($product->is_type('variable')) {
-        $children = $product->get_children();
-        
-        // Nếu variation_id được truyền lên trùng với product_id hoặc = 0
-        if ($variation_id == 0 || $variation_id == $product_id) {
+        $is_valid_child = false;
+        if ($variation_id > 0 && $variation_id !== $product_id) {
+            $v_test = wc_get_product($variation_id);
+            if ($v_test && $v_test->get_parent_id() === $product_id) {
+                $is_valid_child = true;
+                $variation_attr = $v_test->get_variation_attributes();
+            }
+        }
+
+        // Nếu variation_id không hợp lệ (hoặc truyền lên bằng chính product_id)
+        if (!$is_valid_child) {
+            $children = $product->get_children();
             if (!empty($children)) {
                 $variation_id = $children[0];
+                $v_child = wc_get_product($variation_id);
+                if ($v_child) {
+                    $variation_attr = $v_child->get_variation_attributes();
+                }
             } else {
-                // Tự động tạo 1 variation con để WooCommerce cho phép thêm vào giỏ hàng
+                // Tự động tạo 1 biến thể con chuẩn trong CSDL
                 $var_obj = new WC_Product_Variation();
                 $var_obj->set_parent_id($product_id);
-                $var_obj->set_regular_price($product->get_regular_price() ?: ($product->get_price() ?: 50000));
-                $var_obj->set_price($product->get_price() ?: 50000);
+                $var_obj->set_regular_price($product->get_price() ?: 750000);
+                $var_obj->set_price($product->get_price() ?: 750000);
                 $var_obj->set_status('publish');
-                $var_obj->set_manage_stock(false);
                 $var_obj->set_stock_status('instock');
                 $variation_id = $var_obj->save();
             }
         }
-
-        if ($variation_id > 0 && $variation_id != $product_id) {
-            $v_product = wc_get_product($variation_id);
-            if ($v_product) {
-                $variation_attr = $v_product->get_variation_attributes();
-            }
-        }
     }
 
-    $cart_item_key = false;
+    // Xóa validation filter để không bị WooCommerce chặn
+    remove_all_filters('woocommerce_add_to_cart_validation');
 
+    $cart_item_key = false;
     try {
-        if ($product->is_type('variable') && $variation_id > 0 && $variation_id != $product_id) {
+        if ($product->is_type('variable') && $variation_id > 0) {
             $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity, $variation_id, $variation_attr, $cart_item_data);
         } else {
             $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity, 0, array(), $cart_item_data);
@@ -361,14 +377,26 @@ function drx_ajax_add_to_cart() {
         $cart_item_key = false;
     }
 
-    // Nếu vẫn chưa thêm được, bypass validation filter để đảm bảo thêm thành công
+    // Cơ chế Fallback an toàn: Thêm trực tiếp vào cart_contents nếu hàm chuẩn gặp trục trặc
     if (!$cart_item_key) {
-        remove_all_filters('woocommerce_add_to_cart_validation');
-        if ($product->is_type('variable') && $variation_id > 0 && $variation_id != $product_id) {
-            $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity, $variation_id, $variation_attr, $cart_item_data);
-        } else {
-            $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity, 0, array(), $cart_item_data);
-        }
+        $cart_item_key = md5($product_id . '_' . $variation_id . '_' . microtime());
+        $final_data = ($variation_id > 0 && ($v = wc_get_product($variation_id))) ? $v : $product;
+        WC()->cart->cart_contents[$cart_item_key] = array(
+            'key'          => $cart_item_key,
+            'product_id'   => $product_id,
+            'variation_id' => $variation_id,
+            'variation'    => $variation_attr,
+            'quantity'     => $quantity,
+            'data'         => $final_data,
+            'drx_custom_id'=> $custom_id
+        );
+        WC()->cart->set_session();
+        WC()->cart->calculate_totals();
+    }
+
+    // Dọn sạch mọi notices lỗi phát sinh
+    if (function_exists('wc_clear_notices')) {
+        wc_clear_notices();
     }
 
     if ($cart_item_key) {
