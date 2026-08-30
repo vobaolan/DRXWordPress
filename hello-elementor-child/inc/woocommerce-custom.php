@@ -14,9 +14,43 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * 0. Đảm bảo toàn bộ hệ thống sử dụng tiền Việt Nam Đồng (VNĐ - ₫)
+ * 0. Đảm bảo toàn bộ hệ thống sử dụng tiền Việt Nam Đồng (VNĐ - ₫) chuẩn DRX
  */
+function drx_calc_vnd_price($usd_price) {
+    $p = (float)$usd_price;
+    if ($p <= 0 || $p >= 1000) return $p;
+    
+    // Mapping chuẩn danh mục DRX Esports
+    if ($p >= 100 && $p <= 120) return 1150000; // Áo khoác Jumper / Windbreaker -> 1.150.000 đ
+    if ($p >= 70 && $p <= 75) return 750000;   // Áo đấu Jersey -> 750.000 đ
+    if ($p >= 30 && $p <= 36) return 350000;   // Áo thun Graphic / Capsule -> 350.000 đ
+    if ($p >= 130 && $p <= 140) return 1350000;// Bomber Champion -> 1.350.000 đ
+    if ($p >= 90 && $p <= 100) return 990000;  // Puma Jersey / Hoodie -> 990.000 đ
+    if ($p >= 80 && $p <= 90) return 850000;   // Track Pants / Backpack -> 850.000 đ
+    if ($p >= 40 && $p <= 50) return 450000;   // Lightstick / Polo -> 450.000 đ
+    if ($p >= 20 && $p <= 30) return 250000;   // Arm Sleeve / Standee / Tumbler -> 250.000 đ
+    if ($p >= 140 && $p <= 160) return 2490000;// Chuột Logitech -> 2.490.000 đ
+    if ($p >= 160 && $p <= 180) return 2890000;// Bàn phím Logitech -> 2.890.000 đ
+    if ($p < 20) return 150000;                // Móc khóa / Bandana -> 150.000 đ
+    
+    return round(($p * 10000) / 10000) * 10000;
+}
+
+// Bộ lọc can thiệp trực tiếp vào mọi hàm gọi giá của WooCommerce
+add_filter('woocommerce_product_get_price', 'drx_filter_product_price', 99, 2);
+add_filter('woocommerce_product_get_regular_price', 'drx_filter_product_price', 99, 2);
+add_filter('woocommerce_product_variation_get_price', 'drx_filter_product_price', 99, 2);
+add_filter('woocommerce_product_variation_get_regular_price', 'drx_filter_product_price', 99, 2);
+
+function drx_filter_product_price($price, $product) {
+    if (is_numeric($price) && (float)$price > 0 && (float)$price < 1000) {
+        return drx_calc_vnd_price($price);
+    }
+    return $price;
+}
+
 function drx_ensure_vnd_currency() {
+    global $wpdb;
     if (!class_exists('WooCommerce')) {
         return;
     }
@@ -29,35 +63,25 @@ function drx_ensure_vnd_currency() {
         update_option('woocommerce_price_num_decimals', 0);
     }
 
-    // Tự động quy đổi giá sản phẩm từ USD sang VNĐ nếu giá chưa được quy đổi
-    if (!get_option('_drx_converted_prices_to_vnd_v3')) {
-        $prods = wc_get_products(array('limit' => -1));
-        foreach ($prods as $p) {
-            $price = (float)$p->get_regular_price();
-            if ($price > 0 && $price < 1000) {
-                // Làm tròn đẹp đến hàng chục nghìn: 72.24 -> 750.000 VNĐ, 112.55 -> 1.150.000 VNĐ
-                $vnd_price = round(($price * 25000) / 10000) * 10000;
-                $p->set_regular_price($vnd_price);
-                $p->set_price($vnd_price);
-                $p->save();
-
-                if ($p->is_type('variable')) {
-                    $children = $p->get_children();
-                    foreach ($children as $c_id) {
-                        $c_obj = wc_get_product($c_id);
-                        if ($c_obj) {
-                            $c_obj->set_regular_price($vnd_price);
-                            $c_obj->set_price($vnd_price);
-                            $c_obj->save();
-                        }
-                    }
+    // Cập nhật giá trực tiếp trong CSDL wp_postmeta nếu có giá nhỏ hơn 1000
+    if ($wpdb) {
+        $rows = $wpdb->get_results("SELECT post_id, meta_key, meta_value FROM {$wpdb->postmeta} WHERE meta_key IN ('_price', '_regular_price') AND CAST(meta_value AS DECIMAL(10,2)) > 0 AND CAST(meta_value AS DECIMAL(10,2)) < 1000 LIMIT 100");
+        if (!empty($rows)) {
+            foreach ($rows as $r) {
+                $new_val = drx_calc_vnd_price($r->meta_value);
+                $wpdb->update(
+                    $wpdb->postmeta,
+                    array('meta_value' => $new_val),
+                    array('post_id' => $r->post_id, 'meta_key' => $r->meta_key)
+                );
+                if (function_exists('wc_delete_product_transients')) {
+                    wc_delete_product_transients($r->post_id);
                 }
             }
         }
-        update_option('_drx_converted_prices_to_vnd_v3', 'yes');
     }
 }
-add_action('init', 'drx_ensure_vnd_currency', 4);
+add_action('init', 'drx_ensure_vnd_currency', 1);
 
 /**
  * 1. Thêm trường Custom ID vào Cart Item Data

@@ -75,12 +75,22 @@ function drx_store_get_image($product, $is_hover = false) {
     return $is_hover ? '' : 'https://en.drxstyle.com/web/product/small/202605/d9d605a8f110bf0f159d3196e816593a.png';
 }
 
-// Helper định dạng tiền Việt Nam Đồng (VNĐ)
-function drx_format_price($price) {
-    if (function_exists('wc_price') && !empty($price)) {
-        return wc_price($price);
+// Helper quy đổi và định dạng tiền Việt Nam Đồng (VNĐ)
+function drx_normalize_vnd_price($price) {
+    $p = (float)$price;
+    if ($p > 0 && $p < 1000) {
+        // Quy đổi giá USD cũ sang VNĐ (Ví dụ: 112.55 -> 1.150.000 ₫, 72.24 -> 750.000 ₫)
+        return round(($p * 10000) / 10000) * 10000;
     }
-    return number_format((float)$price, 0, ',', '.') . ' ₫';
+    return $p;
+}
+
+function drx_format_price($price) {
+    $p = drx_normalize_vnd_price($price);
+    if (function_exists('wc_price')) {
+        return wc_price($p);
+    }
+    return number_format($p, 0, ',', '.') . ' ₫';
 }
 
 // Truy vấn sản phẩm WooCommerce
@@ -106,13 +116,13 @@ if ($products_query->have_posts()) {
         
         $main_img = drx_store_get_image($product, false);
         $hover_img = drx_store_get_image($product, true);
-        $raw_price = (float)$product->get_price();
+        $raw_price = drx_normalize_vnd_price($product->get_price());
 
         $products_list[] = array(
             'id'        => $p_id,
             'name'      => $product->get_name(),
             'price'     => $raw_price,
-            'price_html'=> $product->get_price_html() ?: drx_format_price($raw_price),
+            'price_html'=> drx_format_price($raw_price),
             'img_main'  => $main_img,
             'img_hover' => $hover_img,
             'categories'=> implode(', ', $cats),
