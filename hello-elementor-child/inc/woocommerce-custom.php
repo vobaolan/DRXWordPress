@@ -14,6 +14,52 @@ if (!defined('ABSPATH')) {
 }
 
 /**
+ * 0. Đảm bảo toàn bộ hệ thống sử dụng tiền Việt Nam Đồng (VNĐ - ₫)
+ */
+function drx_ensure_vnd_currency() {
+    if (!class_exists('WooCommerce')) {
+        return;
+    }
+
+    if (get_option('woocommerce_currency') !== 'VND') {
+        update_option('woocommerce_currency', 'VND');
+        update_option('woocommerce_currency_pos', 'right_space');
+        update_option('woocommerce_price_thousand_sep', '.');
+        update_option('woocommerce_price_decimal_sep', ',');
+        update_option('woocommerce_price_num_decimals', 0);
+    }
+
+    // Tự động quy đổi giá sản phẩm từ USD sang VNĐ nếu giá chưa được quy đổi
+    if (!get_option('_drx_converted_prices_to_vnd_v3')) {
+        $prods = wc_get_products(array('limit' => -1));
+        foreach ($prods as $p) {
+            $price = (float)$p->get_regular_price();
+            if ($price > 0 && $price < 1000) {
+                // Làm tròn đẹp đến hàng chục nghìn: 72.24 -> 750.000 VNĐ, 112.55 -> 1.150.000 VNĐ
+                $vnd_price = round(($price * 25000) / 10000) * 10000;
+                $p->set_regular_price($vnd_price);
+                $p->set_price($vnd_price);
+                $p->save();
+
+                if ($p->is_type('variable')) {
+                    $children = $p->get_children();
+                    foreach ($children as $c_id) {
+                        $c_obj = wc_get_product($c_id);
+                        if ($c_obj) {
+                            $c_obj->set_regular_price($vnd_price);
+                            $c_obj->set_price($vnd_price);
+                            $c_obj->save();
+                        }
+                    }
+                }
+            }
+        }
+        update_option('_drx_converted_prices_to_vnd_v3', 'yes');
+    }
+}
+add_action('init', 'drx_ensure_vnd_currency', 4);
+
+/**
  * 1. Thêm trường Custom ID vào Cart Item Data
  */
 function drx_add_custom_id_to_cart_item_data($cart_item_data, $product_id, $variation_id) {

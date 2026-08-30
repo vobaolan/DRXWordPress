@@ -170,6 +170,12 @@
 		});
 	}
 
+	// Helper định dạng tiền Việt Nam Đồng (VNĐ)
+	function formatPriceVND(amount) {
+		const val = Math.round(Number(amount) || 0);
+		return val.toLocaleString('vi-VN') + ' ₫';
+	}
+
 	function renderModalUI() {
 		const p = currentProductData;
 		const mainImg = p.images && p.images.length > 0 ? p.images[0] : 'https://teamdrx.vercel.app/thumbnail/20260727/aa447560a8495.png';
@@ -196,7 +202,7 @@
 		// Build Right Content
 		let html = `
 			<div class="m-title">${p.name}</div>
-			<div class="m-price" id="m_price_display">USD ${p.price.toFixed(2)}</div>
+			<div class="m-price" id="m_price_display">${formatPriceVND(p.price)}</div>
 			
 			<div class="shipping-info">
 				<div class="s-row"><div class="s-label">Domestic / International Shipping</div><div>oversea delivery</div></div>
@@ -241,7 +247,7 @@
 			<div class="qty-row">
 				<div class="total-calc" style="font-weight: 400; color: var(--text-secondary);">total</div>
 				<div style="display:flex; align-items:center; gap:20px;">
-					<div class="m-price" id="calcPrice" style="margin-bottom:0; font-size: 18px;">USD ${(p.price * currentQty).toFixed(2)}</div>
+					<div class="m-price" id="calcPrice" style="margin-bottom:0; font-size: 18px;">${formatPriceVND(p.price * currentQty)}</div>
 					<div class="qty-controls">
 						<button type="button" class="qty-btn" id="btnQtyMinus">-</button>
 						<span id="qtyVal" style="font-weight:700; width: 24px; text-align:center;">${currentQty}</span>
@@ -342,7 +348,7 @@
 	function updateCalculatedPrice() {
 		const price = matchingVariant ? matchingVariant.price : currentProductData.price;
 		const total = price * currentQty;
-		$('#calcPrice').text('USD ' + total.toFixed(2));
+		$('#calcPrice').text(formatPriceVND(total));
 	}
 
 	/* --------------------------------------------------------------------------
@@ -406,7 +412,7 @@
 
 		if (!data.items || data.items.length === 0) {
 			$body.html('<div class="cart-empty" style="text-align:center; padding: 40px; color: var(--text-muted);">Your cart is currently empty.</div>');
-			$total.text('$0.00');
+			$total.text('0 ₫');
 			return;
 		}
 

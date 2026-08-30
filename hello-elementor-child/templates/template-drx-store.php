@@ -75,6 +75,14 @@ function drx_store_get_image($product, $is_hover = false) {
     return $is_hover ? '' : 'https://en.drxstyle.com/web/product/small/202605/d9d605a8f110bf0f159d3196e816593a.png';
 }
 
+// Helper định dạng tiền Việt Nam Đồng (VNĐ)
+function drx_format_price($price) {
+    if (function_exists('wc_price') && !empty($price)) {
+        return wc_price($price);
+    }
+    return number_format((float)$price, 0, ',', '.') . ' ₫';
+}
+
 // Truy vấn sản phẩm WooCommerce
 $args = array(
     'post_type'      => 'product',
@@ -98,12 +106,13 @@ if ($products_query->have_posts()) {
         
         $main_img = drx_store_get_image($product, false);
         $hover_img = drx_store_get_image($product, true);
+        $raw_price = (float)$product->get_price();
 
         $products_list[] = array(
             'id'        => $p_id,
             'name'      => $product->get_name(),
-            'price'     => (float)$product->get_price(),
-            'price_html'=> $product->get_price_html(),
+            'price'     => $raw_price,
+            'price_html'=> $product->get_price_html() ?: drx_format_price($raw_price),
             'img_main'  => $main_img,
             'img_hover' => $hover_img,
             'categories'=> implode(', ', $cats),
@@ -154,7 +163,7 @@ $site_logo_url = $custom_logo_id ? wp_get_attachment_image_url($custom_logo_id, 
                         <img src="<?php echo esc_url($m_item['img_main']); ?>" alt="<?php echo esc_attr($m_item['name']); ?>" draggable="false">
                         <div class="marquee-info">
                             <div class="marquee-title"><?php echo esc_html($m_item['name']); ?></div>
-                            <div class="marquee-price">USD <?php echo number_format($m_item['price'], 2); ?></div>
+                            <div class="marquee-price"><?php echo drx_format_price($m_item['price']); ?></div>
                         </div>
                     </div>
                 <?php endforeach;
@@ -201,7 +210,7 @@ $site_logo_url = $custom_logo_id ? wp_get_attachment_image_url($custom_logo_id, 
                             </div>
                             <div class="product-info">
                                 <h3 class="product-title"><?php echo esc_html($prod['name']); ?></h3>
-                                <div class="product-price">USD <?php echo number_format($prod['price'], 2); ?></div>
+                                <div class="product-price"><?php echo drx_format_price($prod['price']); ?></div>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -330,7 +339,7 @@ $site_logo_url = $custom_logo_id ? wp_get_attachment_image_url($custom_logo_id, 
     <div class="cart-footer">
         <div class="cart-total-row">
             <span><?php _e('Total:', 'hello-elementor-child'); ?></span>
-            <span id="cartTotal">$0.00</span>
+            <span id="cartTotal">0 ₫</span>
         </div>
         <a href="<?php echo esc_url(wc_get_checkout_url()); ?>" class="btn-primary-checkout"><?php _e('Proceed to Checkout', 'hello-elementor-child'); ?></a>
     </div>
