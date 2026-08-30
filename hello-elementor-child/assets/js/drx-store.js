@@ -167,6 +167,9 @@
 			error: function () {
 				$('#m_right_content').html('<div style="color: #ef4444; padding: 20px;">Không thể kết nối máy chủ.</div>');
 			}
+		});
+	}
+
 	// Helper quy đổi và định dạng tiền Việt Nam Đồng (VNĐ)
 	function normalizePriceVND(amount) {
 		let val = Number(amount) || 0;
