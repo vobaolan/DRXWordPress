@@ -375,8 +375,11 @@
 		const $btn = redirectCheckout ? $('#btnModalBuyNow') : $('#btnModalAddCart');
 		$btn.text('PROCESSING...').prop('disabled', true);
 
+		const ajaxUrl = (typeof drx_ajax_obj !== 'undefined' && drx_ajax_obj.ajax_url) ? drx_ajax_obj.ajax_url : '/wp-admin/admin-ajax.php';
+		const ajaxNonce = (typeof drx_ajax_obj !== 'undefined' && drx_ajax_obj.nonce) ? drx_ajax_obj.nonce : '';
+
 		$.ajax({
-			url: drx_ajax_obj.ajax_url,
+			url: ajaxUrl,
 			type: 'POST',
 			data: {
 				action: 'drx_add_to_cart',
@@ -384,7 +387,7 @@
 				variation_id: variationId,
 				quantity: currentQty,
 				custom_id: customId,
-				security: drx_ajax_obj.nonce
+				security: ajaxNonce
 			},
 			success: function (res) {
 				if (res.success) {
@@ -393,7 +396,16 @@
 					renderCartDrawerItems(res.data);
 
 					if (redirectCheckout) {
-						window.location.href = res.data.checkout_url || drx_ajax_obj.checkout_url;
+						let targetCheckoutUrl = (res.data && res.data.checkout_url) ? res.data.checkout_url : ((typeof drx_ajax_obj !== 'undefined' && drx_ajax_obj.checkout_url) ? drx_ajax_obj.checkout_url : '/checkout/');
+						try {
+							const u = new URL(targetCheckoutUrl, window.location.origin);
+							// Luôn đảm bảo chuyển hướng đúng host & port đang chạy (ví dụ: localhost:10016)
+							u.host = window.location.host;
+							targetCheckoutUrl = u.toString();
+						} catch(e) {
+							targetCheckoutUrl = window.location.origin + '/checkout/';
+						}
+						window.location.href = targetCheckoutUrl;
 					} else {
 						openCart();
 					}

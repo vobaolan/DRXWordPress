@@ -430,7 +430,7 @@ function drx_ajax_add_to_cart() {
             'cart_count'   => $cart_count,
             'cart_total'   => $cart_total,
             'items'        => $items,
-            'checkout_url' => wc_get_checkout_url()
+            'checkout_url' => drx_get_safe_checkout_url()
         ));
     }
 
@@ -438,6 +438,21 @@ function drx_ajax_add_to_cart() {
 }
 add_action('wp_ajax_drx_add_to_cart', 'drx_ajax_add_to_cart');
 add_action('wp_ajax_nopriv_drx_add_to_cart', 'drx_ajax_add_to_cart');
+
+/**
+ * Helper lấy URL Checkout an toàn tuyệt đối, bảo toàn đúng host và port (ví dụ: localhost:10016)
+ */
+function drx_get_safe_checkout_url() {
+    $url = function_exists('wc_get_checkout_url') ? wc_get_checkout_url() : home_url('/checkout/');
+    if (isset($_SERVER['HTTP_HOST']) && !empty($_SERVER['HTTP_HOST'])) {
+        $parsed = parse_url($url);
+        $path = isset($parsed['path']) ? $parsed['path'] : '/checkout/';
+        $query = isset($parsed['query']) ? '?' . $parsed['query'] : '';
+        $scheme = is_ssl() ? 'https://' : 'http://';
+        return $scheme . $_SERVER['HTTP_HOST'] . $path . $query;
+    }
+    return $url;
+}
 
 /**
  * 6. AJAX Endpoint: Tra cứu đơn hàng (Track Order)
