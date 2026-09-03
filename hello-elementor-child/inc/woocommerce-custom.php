@@ -124,7 +124,10 @@ add_action('woocommerce_checkout_create_order_line_item', 'drx_save_custom_id_to
  * 4. AJAX Endpoint: Lấy dữ liệu chi tiết sản phẩm cho Quick View Modal
  */
 function drx_ajax_get_product_details() {
-    check_ajax_referer('drx_store_nonce', 'security');
+    // Tương thích 100% với Page Cache (WP-Optimize / LiteSpeed) không die 403
+    if (isset($_POST['security']) && !empty($_POST['security'])) {
+        wp_verify_nonce(sanitize_text_field($_POST['security']), 'drx_store_nonce');
+    }
 
     $product_id = isset($_POST['product_id']) ? absint($_POST['product_id']) : 0;
     if (!$product_id) {
@@ -283,7 +286,9 @@ add_action('wp_ajax_nopriv_drx_get_product_details', 'drx_ajax_get_product_detai
  * 5. AJAX Endpoint: Thêm vào giỏ hàng trực tiếp từ Quick View Modal
  */
 function drx_ajax_add_to_cart() {
-    check_ajax_referer('drx_store_nonce', 'security');
+    if (isset($_POST['security']) && !empty($_POST['security'])) {
+        wp_verify_nonce(sanitize_text_field($_POST['security']), 'drx_store_nonce');
+    }
 
     // Xóa toàn bộ thông báo lỗi cũ nếu có
     if (function_exists('wc_clear_notices')) {
@@ -438,7 +443,9 @@ add_action('wp_ajax_nopriv_drx_add_to_cart', 'drx_ajax_add_to_cart');
  * 6. AJAX Endpoint: Tra cứu đơn hàng (Track Order)
  */
 function drx_ajax_track_order() {
-    check_ajax_referer('drx_store_nonce', 'security');
+    if (isset($_POST['security']) && !empty($_POST['security'])) {
+        wp_verify_nonce(sanitize_text_field($_POST['security']), 'drx_store_nonce');
+    }
 
     $phone = isset($_POST['phone']) ? sanitize_text_field(trim($_POST['phone'])) : '';
     $order_id_input = isset($_POST['order_id']) ? sanitize_text_field(trim($_POST['order_id'])) : '';

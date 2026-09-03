@@ -140,15 +140,20 @@
 
 	function openQuickView(productId) {
 		$('#variantModal').addClass('active');
-		$('#m_right_content').html('<div style="text-align:center; padding: 40px; color: var(--text-muted);">Đang tải thông tin sản phẩm...</div>');
+		$('#m_img').attr('src', 'https://teamdrx.vercel.app/thumbnail/20260727/aa447560a8495.png');
+		$('#m_thumbnails').empty();
+		$('#m_right_content').html('<div style="text-align:center; padding: 40px; color: var(--text-muted);"><div style="display:inline-block; width:28px; height:28px; border:3px solid #E2E8F0; border-top-color:#0052FF; border-radius:50%; animation:spin 1s linear infinite; margin-bottom:12px;"></div><div>Đang tải thông tin sản phẩm...</div></div>');
+
+		const ajaxUrl = (typeof drx_ajax_obj !== 'undefined' && drx_ajax_obj.ajax_url) ? drx_ajax_obj.ajax_url : '/wp-admin/admin-ajax.php';
+		const ajaxNonce = (typeof drx_ajax_obj !== 'undefined' && drx_ajax_obj.nonce) ? drx_ajax_obj.nonce : '';
 
 		$.ajax({
-			url: drx_ajax_obj.ajax_url,
+			url: ajaxUrl,
 			type: 'POST',
 			data: {
 				action: 'drx_get_product_details',
 				product_id: productId,
-				security: drx_ajax_obj.nonce
+				security: ajaxNonce
 			},
 			success: function (res) {
 				if (res.success && res.data) {
@@ -161,11 +166,11 @@
 					renderModalUI();
 					checkMatchingVariant();
 				} else {
-					$('#m_right_content').html('<div style="color: #ef4444; padding: 20px;">Lỗi: ' + (res.data ? res.data.message : 'Không thể tải dữ liệu') + '</div>');
+					$('#m_right_content').html('<div style="color: #ef4444; padding: 20px; text-align:center;">Lỗi: ' + (res.data ? res.data.message : 'Không thể tải dữ liệu') + '</div>');
 				}
 			},
 			error: function () {
-				$('#m_right_content').html('<div style="color: #ef4444; padding: 20px;">Không thể kết nối máy chủ.</div>');
+				$('#m_right_content').html('<div style="color: #ef4444; padding: 20px; text-align:center;">Không thể kết nối máy chủ.<br><button type="button" onclick="openQuickView(' + productId + ')" style="margin-top:10px; padding:6px 14px; background:#0052FF; color:white; border:none; border-radius:6px; cursor:pointer;">Thử lại</button></div>');
 			}
 		});
 	}
