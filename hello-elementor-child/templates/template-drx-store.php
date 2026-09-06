@@ -498,29 +498,29 @@ function escapeHtml(text) {
 function getDrxAiResponse(q) {
     var s = q.toLowerCase();
 
-    // 1. So sánh T-Shirt và Windbreaker / Tư vấn size
+    // 1. Thanh toán 50% / Cọc / Trả trước / Trả nốt (Ưu tiên số 1)
+    if (s.includes('50%') || s.includes('cọc') || s.includes('trả nốt') || s.includes('trả trước') || s.includes('thanh toán trước') || (s.includes('thanh toán') && (s.includes('50') || s.includes('trước') || s.includes('nốt')))) {
+        return "Dạ hiện tại DRX Store áp dụng 2 hình thức thanh toán chính thức: <b>Thanh toán khi nhận hàng (COD)</b> hoặc <b>Chuyển khoản ngân hàng 100%</b> khi đặt hàng.<br><br>Shop <b>chưa hỗ trợ hình thức đặt cọc hoặc trả trước 50%</b> nhận hàng trả nốt, mong anh/chị thông cảm giúp shop nhé ạ!";
+    }
+
+    // 2. Câu hỏi lạc đề / Thời tiết
+    if (s.includes('thời tiết') || s.includes('mưa') || s.includes('nắng') || s.includes('sài gòn') || s.includes('chính trị') || s.includes('viết bài') || s.includes('làm văn')) {
+        return "Dạ câu hỏi này ngoài phạm vi tư vấn bán hàng của shop rồi ạ. Em xin phép được hỗ trợ anh/chị về các mẫu áo đấu, bảng size, phụ kiện và chính sách mua sắm của <b>DRX Store</b> nhé ạ! 😊";
+    }
+
+    // 3. So sánh T-Shirt và Windbreaker / Tư vấn size
     if ((s.includes('t-shirt') || s.includes('áo đấu') || s.includes('jersey') || s.includes('so sánh')) && (s.includes('windbreaker') || s.includes('áo khoác') || s.includes('khác nhau') || s.includes('học'))) {
         return "Dạ, <b>Áo thi đấu 26 S2 T-Shirt (750.000₫)</b> sử dụng chất liệu thun co giãn 4 chiều thoáng khí thấm hút mồ hôi tối đa; còn <b>Áo khoác Windbreaker (1.150.000₫)</b> được may bằng vải dù Polyester chống nước nhẹ cản gió, có túi khóa tiện lợi nên rất phù hợp để mặc đi học, đi làm ngoài đường.<br><br>Nếu anh/chị cao khoảng 1m75 nặng 68kg, shop tư vấn anh/chị chọn <b>Size L</b> để mặc thoải mái và chuẩn phom nhất nhé ạ!";
     }
 
-    // 2. Chính sách đổi trả
-    if (s.includes('đổi') || s.includes('trả') || s.includes('hoàn tiền') || s.includes('không vừa') || s.includes('rộng') || s.includes('chật')) {
+    // 4. Chính sách đổi trả & Hoàn tiền
+    if (s.includes('đổi') || s.includes('hoàn tiền') || s.includes('không vừa') || s.includes('rộng') || s.includes('chật') || s.includes('đổi size') || s.includes('đổi trả')) {
         return "Dạ shop hỗ trợ đổi size hoặc hoàn tiền trong vòng <b>7 ngày</b> kể từ khi nhận hàng ạ. Điều kiện: sản phẩm còn nguyên tem mác, chưa qua giặt tẩy hay sử dụng. Đổi size hoàn toàn miễn phí, anh/chị chỉ cần thanh toán phí ship chiều gửi về thôi ạ!";
     }
 
-    // 3. Phí ship & Giao hàng (Cần Thơ / tỉnh xa / kiểm tra hàng)
+    // 5. Phí ship & Giao hàng (Cần Thơ / tỉnh xa / kiểm tra hàng)
     if (s.includes('cần thơ') || s.includes('ship') || s.includes('giao hàng') || s.includes('bao lâu') || s.includes('kiểm tra') || s.includes('đồng kiểm') || s.includes('nhận được')) {
         return "Dạ với các tỉnh thành ngoài TP.HCM (như Cần Thơ), phí vận chuyển toàn quốc là <b>50.000₫</b> cố định (nội thành TP.HCM là 30.000₫), thời gian nhận hàng từ <b>2–4 ngày làm việc</b>.<br><br>Đặc biệt, shop luôn hỗ trợ <b>đồng kiểm (kiểm tra hàng) trước khi thanh toán</b> nên anh/chị hoàn toàn yên tâm nhé ạ!";
-    }
-
-    // 4. Thanh toán 50% / Cọc / Trả góp
-    if (s.includes('50%') || s.includes('cọc') || s.includes('trả góp') || s.includes('trước')) {
-        return "Dạ hiện tại DRX Store áp dụng 2 hình thức thanh toán chính: <b>Thanh toán khi nhận hàng (COD 100%)</b> hoặc <b>Chuyển khoản ngân hàng 100%</b> khi đặt hàng. Shop chưa hỗ trợ hình thức đặt cọc trước 50% mong anh/chị thông cảm giúp shop nhé ạ!";
-    }
-
-    // 5. Câu hỏi lạc đề / Thời tiết
-    if (s.includes('thời tiết') || s.includes('mưa') || s.includes('nắng') || s.includes('sài gòn') || s.includes('chính trị')) {
-        return "Dạ câu hỏi này ngoài phạm vi tư vấn bán hàng của shop rồi ạ. Em xin phép được hỗ trợ anh/chị về các mẫu áo đấu, bảng size, phụ kiện và chính sách của <b>DRX Store</b> nhé ạ! 😊";
     }
 
     // 6. Dịch vụ in tên thêu Custom ID
@@ -531,6 +531,11 @@ function getDrxAiResponse(q) {
     // 7. Tra cứu đơn hàng
     if (s.includes('tra cứu') || s.includes('track') || s.includes('mã đơn')) {
         return "Dạ anh/chị có thể tự tra cứu đơn hàng trực tiếp bằng cách bấm vào nút <b>'Track Order'</b> trên thanh menu đầu trang, sau đó nhập Số điện thoại và Mã đơn hàng để xem tiến độ giao hàng ngay lập tức nhé ạ!";
+    }
+
+    // 8. Phương thức thanh toán nói chung
+    if (s.includes('thanh toán') || s.includes('chuyển khoản') || s.includes('cod')) {
+        return "Dạ shop hỗ trợ 2 hình thức thanh toán: <b>Thanh toán khi nhận hàng (COD)</b> hoặc <b>Chuyển khoản ngân hàng 100%</b> khi đặt đơn trên website nhé ạ!";
     }
 
     // Mặc định
