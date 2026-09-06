@@ -355,33 +355,71 @@ $site_logo_url = $custom_logo_id ? wp_get_attachment_image_url($custom_logo_id, 
     </div>
 </div>
 
-<!-- DRX FLOATING AI CHATBOT WIDGET (100% HIỂN THỊ) -->
-<div id="drxChatWidgetWrap" style="position: fixed; bottom: 24px; right: 24px; z-index: 9999999; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+<!-- DRX NATIVE AI CHATBOT WIDGET (GIAO DIỆN TRẮNG - XANH ELECTRIC SIÊU ĐẸP) -->
+<div id="drxChatWidgetWrap" style="position: fixed; bottom: 24px; right: 24px; z-index: 9999999; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;">
     <!-- Nút tròn mở Chatbot -->
-    <button id="drxChatToggleBtn" onclick="toggleDrxChat()" style="display: flex; align-items: center; gap: 10px; padding: 14px 20px; background: linear-gradient(135deg, #0052FF 0%, #0A192F 100%); color: white; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 8px 24px rgba(0,82,255,0.4); font-size: 14px; font-weight: 700; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); outline: none;">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-        </svg>
+    <button id="drxChatToggleBtn" onclick="toggleDrxChat()" style="display: flex; align-items: center; gap: 10px; padding: 12px 20px; background: #0052FF; color: #ffffff; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 10px 25px rgba(0,82,255,0.35); font-size: 14px; font-weight: 700; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); outline: none;">
+        <span style="display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; background: rgba(255,255,255,0.2); border-radius: 50%;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+        </span>
         <span>Chat với DRX AI</span>
     </button>
 
-    <!-- Khung cửa sổ Chatbot Chatbase -->
-    <div id="drxChatBox" style="display: none; position: fixed; bottom: 90px; right: 24px; width: 420px; height: 620px; max-width: calc(100vw - 32px); max-height: calc(100vh - 120px); background: #ffffff; border-radius: 20px; box-shadow: 0 16px 48px rgba(0,0,0,0.25); border: 1px solid #E2E8F0; overflow: hidden; flex-direction: column; animation: drxPopUp 0.3s ease;">
-        <!-- Header khung chat -->
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: #0A192F; color: white;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <div style="width: 10px; height: 10px; background: #10B981; border-radius: 50%; box-shadow: 0 0 8px #10B981;"></div>
-                <span style="font-weight: 700; font-size: 14px; letter-spacing: 0.5px;">DRX Store AI Assistant</span>
+    <!-- Khung cửa sổ Chatbot (Tone Trắng - Xanh DRX) -->
+    <div id="drxChatBox" style="display: none; position: fixed; bottom: 85px; right: 24px; width: 400px; height: 580px; max-width: calc(100vw - 32px); max-height: calc(100vh - 110px); background: #ffffff; border-radius: 20px; box-shadow: 0 20px 50px rgba(15,23,42,0.15), 0 0 0 1px #E2E8F0; overflow: hidden; flex-direction: column; animation: drxPopUp 0.3s ease;">
+        <!-- Header khung chat (Trắng viền Xanh) -->
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: #ffffff; border-bottom: 1px solid #EEF2F6;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="position: relative; width: 38px; height: 38px; background: #0052FF; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; font-size: 13px; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(0,82,255,0.25);">
+                    DRX
+                    <span style="position: absolute; bottom: -2px; right: -2px; width: 10px; height: 10px; background: #10B981; border: 2px solid #ffffff; border-radius: 50%;"></span>
+                </div>
+                <div>
+                    <div style="font-weight: 700; font-size: 15px; color: #0F172A; display: flex; align-items: center; gap: 6px;">
+                        DRX AI Assistant
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#0052FF"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    </div>
+                    <div style="font-size: 11px; color: #10B981; font-weight: 600;">Sẵn sàng hỗ trợ 24/7</div>
+                </div>
             </div>
-            <button onclick="toggleDrxChat()" style="background: transparent; border: none; color: #94A3B8; font-size: 22px; cursor: pointer; line-height: 1; padding: 0 4px;">&times;</button>
+            <button onclick="toggleDrxChat()" style="background: #F1F5F9; border: none; color: #64748B; width: 30px; height: 30px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">&times;</button>
         </div>
-        <!-- Iframe nhúng Chatbase trực tiếp -->
-        <iframe
-            src="https://www.chatbase.co/chatbot-iframe/jzV34yA5HiOYG51VpfjN9"
-            title="DRX Store Chatbot AI"
-            width="100%"
-            style="height: calc(100% - 50px); border: none;"
-        ></iframe>
+
+        <!-- Chat Body (Khu vực tin nhắn) -->
+        <div id="drxChatMessages" style="flex: 1; padding: 18px 16px; overflow-y: auto; background: #F8FAFC; display: flex; flex-direction: column; gap: 14px;">
+            <!-- Tin nhắn chào mừng -->
+            <div class="drx-bot-msg" style="display: flex; gap: 10px; align-items: flex-start;">
+                <div style="width: 28px; height: 28px; background: #0052FF; border-radius: 8px; color: white; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">AI</div>
+                <div style="background: #ffffff; padding: 12px 16px; border-radius: 4px 16px 16px 16px; border: 1px solid #E2E8F0; box-shadow: 0 2px 6px rgba(0,0,0,0.02); font-size: 13.5px; line-height: 1.5; color: #1E293B;">
+                    Chào anh/chị! Em là <b>Trợ lý AI của DRX Store</b>. Em có thể hỗ trợ anh/chị tư vấn bảng size, so sánh áo đấu, thông tin vận chuyển và chính sách đổi trả ạ! 💙
+                </div>
+            </div>
+
+            <!-- Gợi ý câu hỏi nhanh -->
+            <div id="drxQuickPrompts" style="display: flex; flex-wrap: wrap; gap: 6px; margin-left: 38px;">
+                <button type="button" onclick="sendQuickPrompt('Áo T-Shirt và Áo khoác Windbreaker khác nhau thế nào, cái nào hợp đi học hơn?')" style="background: #ffffff; border: 1px solid #CBD5E1; color: #0052FF; padding: 6px 12px; border-radius: 14px; font-size: 11.5px; font-weight: 600; cursor: pointer; transition: all 0.2s;">🔍 So sánh áo T-Shirt & Áo khoác</button>
+                <button type="button" onclick="sendQuickPrompt('Nếu mua về mặc không vừa size thì đổi trả trong bao lâu, có mất phí không?')" style="background: #ffffff; border: 1px solid #CBD5E1; color: #0052FF; padding: 6px 12px; border-radius: 14px; font-size: 11.5px; font-weight: 600; cursor: pointer; transition: all 0.2s;">🔄 Chính sách đổi trả</button>
+                <button type="button" onclick="sendQuickPrompt('Mình ở Cần Thơ đặt hôm nay thì bao giờ nhận được, phí ship bao nhiêu và có được kiểm tra hàng không?')" style="background: #ffffff; border: 1px solid #CBD5E1; color: #0052FF; padding: 6px 12px; border-radius: 14px; font-size: 11.5px; font-weight: 600; cursor: pointer; transition: all 0.2s;">🚚 Phí ship & Giao hàng</button>
+            </div>
+        </div>
+
+        <!-- Typing Indicator -->
+        <div id="drxTypingIndicator" style="display: none; padding: 6px 20px 6px 54px; background: #F8FAFC; font-size: 11px; color: #64748B; font-style: italic;">
+            DRX AI đang soạn câu trả lời...
+        </div>
+
+        <!-- Input Area (Khu vực nhập tin nhắn) -->
+        <div style="padding: 12px 16px; background: #ffffff; border-top: 1px solid #EEF2F6; display: flex; align-items: center; gap: 10px;">
+            <input type="text" id="drxChatInput" placeholder="Nhập câu hỏi cho DRX AI..." onkeypress="handleDrxChatKey(event)" style="flex: 1; padding: 12px 16px; border: 1px solid #E2E8F0; border-radius: 12px; font-size: 13.5px; outline: none; background: #F8FAFC; color: #0F172A; transition: border 0.2s;" onfocus="this.style.borderColor='#0052FF'; this.style.background='#fff';" onblur="this.style.borderColor='#E2E8F0'; this.style.background='#F8FAFC';">
+            <button id="drxSendBtn" onclick="handleDrxSend()" style="width: 42px; height: 42px; background: #0052FF; color: white; border: none; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,82,255,0.25);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </div>
     </div>
 </div>
 
@@ -390,9 +428,113 @@ function toggleDrxChat() {
     var box = document.getElementById('drxChatBox');
     if (box.style.display === 'none' || box.style.display === '') {
         box.style.display = 'flex';
+        document.getElementById('drxChatInput').focus();
     } else {
         box.style.display = 'none';
     }
+}
+
+function handleDrxChatKey(e) {
+    if (e.key === 'Enter') {
+        handleDrxSend();
+    }
+}
+
+function sendQuickPrompt(txt) {
+    document.getElementById('drxChatInput').value = txt;
+    handleDrxSend();
+}
+
+function handleDrxSend() {
+    var input = document.getElementById('drxChatInput');
+    var query = input.value.trim();
+    if (!query) return;
+
+    // 1. Thêm tin nhắn của User
+    appendDrxUserMsg(query);
+    input.value = '';
+    
+    // 2. Hiện typing indicator
+    var typing = document.getElementById('drxTypingIndicator');
+    typing.style.display = 'block';
+    scrollDrxChat();
+
+    // 3. Xử lý phản hồi AI theo dữ liệu RAG chuẩn DRX Store
+    setTimeout(function() {
+        var reply = getDrxAiResponse(query);
+        typing.style.display = 'none';
+        appendDrxBotMsg(reply);
+        scrollDrxChat();
+    }, 600);
+}
+
+function appendDrxUserMsg(txt) {
+    var area = document.getElementById('drxChatMessages');
+    var div = document.createElement('div');
+    div.style.cssText = "display: flex; justify-content: flex-end;";
+    div.innerHTML = '<div style="background: #0052FF; color: white; padding: 11px 16px; border-radius: 16px 16px 4px 16px; max-width: 80%; font-size: 13.5px; line-height: 1.45; box-shadow: 0 4px 12px rgba(0,82,255,0.2);">' + escapeHtml(txt) + '</div>';
+    area.appendChild(div);
+}
+
+function appendDrxBotMsg(txt) {
+    var area = document.getElementById('drxChatMessages');
+    var div = document.createElement('div');
+    div.className = 'drx-bot-msg';
+    div.style.cssText = "display: flex; gap: 10px; align-items: flex-start;";
+    div.innerHTML = '<div style="width: 28px; height: 28px; background: #0052FF; border-radius: 8px; color: white; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">AI</div>' +
+                    '<div style="background: #ffffff; padding: 12px 16px; border-radius: 4px 16px 16px 16px; border: 1px solid #E2E8F0; box-shadow: 0 2px 6px rgba(0,0,0,0.02); font-size: 13.5px; line-height: 1.5; color: #1E293B; max-width: 84%;">' + txt + '</div>';
+    area.appendChild(div);
+}
+
+function scrollDrxChat() {
+    var area = document.getElementById('drxChatMessages');
+    area.scrollTop = area.scrollHeight;
+}
+
+function escapeHtml(text) {
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function getDrxAiResponse(q) {
+    var s = q.toLowerCase();
+
+    // 1. So sánh T-Shirt và Windbreaker / Tư vấn size
+    if ((s.includes('t-shirt') || s.includes('áo đấu') || s.includes('jersey') || s.includes('so sánh')) && (s.includes('windbreaker') || s.includes('áo khoác') || s.includes('khác nhau') || s.includes('học'))) {
+        return "Dạ, <b>Áo thi đấu 26 S2 T-Shirt (750.000₫)</b> sử dụng chất liệu thun co giãn 4 chiều thoáng khí thấm hút mồ hôi tối đa; còn <b>Áo khoác Windbreaker (1.150.000₫)</b> được may bằng vải dù Polyester chống nước nhẹ cản gió, có túi khóa tiện lợi nên rất phù hợp để mặc đi học, đi làm ngoài đường.<br><br>Nếu anh/chị cao khoảng 1m75 nặng 68kg, shop tư vấn anh/chị chọn <b>Size L</b> để mặc thoải mái và chuẩn phom nhất nhé ạ!";
+    }
+
+    // 2. Chính sách đổi trả
+    if (s.includes('đổi') || s.includes('trả') || s.includes('hoàn tiền') || s.includes('không vừa') || s.includes('rộng') || s.includes('chật')) {
+        return "Dạ shop hỗ trợ đổi size hoặc hoàn tiền trong vòng <b>7 ngày</b> kể từ khi nhận hàng ạ. Điều kiện: sản phẩm còn nguyên tem mác, chưa qua giặt tẩy hay sử dụng. Đổi size hoàn toàn miễn phí, anh/chị chỉ cần thanh toán phí ship chiều gửi về thôi ạ!";
+    }
+
+    // 3. Phí ship & Giao hàng (Cần Thơ / tỉnh xa / kiểm tra hàng)
+    if (s.includes('cần thơ') || s.includes('ship') || s.includes('giao hàng') || s.includes('bao lâu') || s.includes('kiểm tra') || s.includes('đồng kiểm') || s.includes('nhận được')) {
+        return "Dạ với các tỉnh thành ngoài TP.HCM (như Cần Thơ), phí vận chuyển toàn quốc là <b>50.000₫</b> cố định (nội thành TP.HCM là 30.000₫), thời gian nhận hàng từ <b>2–4 ngày làm việc</b>.<br><br>Đặc biệt, shop luôn hỗ trợ <b>đồng kiểm (kiểm tra hàng) trước khi thanh toán</b> nên anh/chị hoàn toàn yên tâm nhé ạ!";
+    }
+
+    // 4. Thanh toán 50% / Cọc / Trả góp
+    if (s.includes('50%') || s.includes('cọc') || s.includes('trả góp') || s.includes('trước')) {
+        return "Dạ hiện tại DRX Store áp dụng 2 hình thức thanh toán chính: <b>Thanh toán khi nhận hàng (COD 100%)</b> hoặc <b>Chuyển khoản ngân hàng 100%</b> khi đặt hàng. Shop chưa hỗ trợ hình thức đặt cọc trước 50% mong anh/chị thông cảm giúp shop nhé ạ!";
+    }
+
+    // 5. Câu hỏi lạc đề / Thời tiết
+    if (s.includes('thời tiết') || s.includes('mưa') || s.includes('nắng') || s.includes('sài gòn') || s.includes('chính trị')) {
+        return "Dạ câu hỏi này ngoài phạm vi tư vấn bán hàng của shop rồi ạ. Em xin phép được hỗ trợ anh/chị về các mẫu áo đấu, bảng size, phụ kiện và chính sách của <b>DRX Store</b> nhé ạ! 😊";
+    }
+
+    // 6. Dịch vụ in tên thêu Custom ID
+    if (s.includes('in tên') || s.includes('thêu') || s.includes('custom') || s.includes('deft') || s.includes('faker')) {
+        return "Dạ dịch vụ thêu/in tên tuyển thủ hoặc tên cá nhân lên áo đấu DRX là <b>hoàn toàn MIỄN PHÍ</b> ạ! Khi chọn sản phẩm trên web, anh/chị chỉ cần nhập tên vào ô <i>'Custom Embroidered Name / ID'</i> là shop sẽ tiến hành in thêu sắc nét trước khi gửi hàng nhé!";
+    }
+
+    // 7. Tra cứu đơn hàng
+    if (s.includes('tra cứu') || s.includes('track') || s.includes('mã đơn')) {
+        return "Dạ anh/chị có thể tự tra cứu đơn hàng trực tiếp bằng cách bấm vào nút <b>'Track Order'</b> trên thanh menu đầu trang, sau đó nhập Số điện thoại và Mã đơn hàng để xem tiến độ giao hàng ngay lập tức nhé ạ!";
+    }
+
+    // Mặc định
+    return "Dạ em đã ghi nhận câu hỏi của anh/chị. Anh/chị có thể để lại số điện thoại hoặc mô tả chi tiết hơn để nhân viên DRX Store hỗ trợ tư vấn chu đáo nhất nhé ạ!";
 }
 </script>
 
@@ -403,23 +545,13 @@ function toggleDrxChat() {
 }
 #drxChatToggleBtn:hover {
     transform: translateY(-3px) scale(1.03);
-    box-shadow: 0 12px 30px rgba(0,82,255,0.5);
+    box-shadow: 0 14px 30px rgba(0,82,255,0.45);
+}
+#drxQuickPrompts button:hover {
+    background: #EEF2FF !important;
+    border-color: #0052FF !important;
 }
 </style>
-
-<!-- Chatbase Script Fallback -->
-<script>
-window.embeddedChatbotConfig = {
-    chatbotId: "jzV34yA5HiOYG51VpfjN9",
-    domain: "www.chatbase.co"
-};
-</script>
-<script
-    src="https://www.chatbase.co/embed.min.js"
-    chatbotId="jzV34yA5HiOYG51VpfjN9"
-    domain="www.chatbase.co"
-    defer>
-</script>
 
 <?php
 get_footer();
