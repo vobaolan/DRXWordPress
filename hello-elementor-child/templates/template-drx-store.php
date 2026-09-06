@@ -355,7 +355,59 @@ $site_logo_url = $custom_logo_id ? wp_get_attachment_image_url($custom_logo_id, 
     </div>
 </div>
 
-<!-- Chatbase AI Chatbot Direct Embed -->
+<!-- DRX FLOATING AI CHATBOT WIDGET (100% HIỂN THỊ) -->
+<div id="drxChatWidgetWrap" style="position: fixed; bottom: 24px; right: 24px; z-index: 9999999; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    <!-- Nút tròn mở Chatbot -->
+    <button id="drxChatToggleBtn" onclick="toggleDrxChat()" style="display: flex; align-items: center; gap: 10px; padding: 14px 20px; background: linear-gradient(135deg, #0052FF 0%, #0A192F 100%); color: white; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 8px 24px rgba(0,82,255,0.4); font-size: 14px; font-weight: 700; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); outline: none;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span>Chat với DRX AI</span>
+    </button>
+
+    <!-- Khung cửa sổ Chatbot Chatbase -->
+    <div id="drxChatBox" style="display: none; position: fixed; bottom: 90px; right: 24px; width: 420px; height: 620px; max-width: calc(100vw - 32px); max-height: calc(100vh - 120px); background: #ffffff; border-radius: 20px; box-shadow: 0 16px 48px rgba(0,0,0,0.25); border: 1px solid #E2E8F0; overflow: hidden; flex-direction: column; animation: drxPopUp 0.3s ease;">
+        <!-- Header khung chat -->
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: #0A192F; color: white;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 10px; height: 10px; background: #10B981; border-radius: 50%; box-shadow: 0 0 8px #10B981;"></div>
+                <span style="font-weight: 700; font-size: 14px; letter-spacing: 0.5px;">DRX Store AI Assistant</span>
+            </div>
+            <button onclick="toggleDrxChat()" style="background: transparent; border: none; color: #94A3B8; font-size: 22px; cursor: pointer; line-height: 1; padding: 0 4px;">&times;</button>
+        </div>
+        <!-- Iframe nhúng Chatbase trực tiếp -->
+        <iframe
+            src="https://www.chatbase.co/chatbot-iframe/jzV34yA5HiOYG51VpfjN9"
+            title="DRX Store Chatbot AI"
+            width="100%"
+            style="height: calc(100% - 50px); border: none;"
+        ></iframe>
+    </div>
+</div>
+
+<script>
+function toggleDrxChat() {
+    var box = document.getElementById('drxChatBox');
+    if (box.style.display === 'none' || box.style.display === '') {
+        box.style.display = 'flex';
+    } else {
+        box.style.display = 'none';
+    }
+}
+</script>
+
+<style>
+@keyframes drxPopUp {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+#drxChatToggleBtn:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 12px 30px rgba(0,82,255,0.5);
+}
+</style>
+
+<!-- Chatbase Script Fallback -->
 <script>
 window.embeddedChatbotConfig = {
     chatbotId: "jzV34yA5HiOYG51VpfjN9",
