@@ -355,5 +355,20 @@ $site_logo_url = $custom_logo_id ? wp_get_attachment_image_url($custom_logo_id, 
     </div>
 </div>
 
+<!-- Chatbase AI Chatbot Direct Embed -->
+<script>
+window.embeddedChatbotConfig = {
+    chatbotId: "jzV34yA5HiOYG51VpfjN9",
+    domain: "www.chatbase.co"
+};
+</script>
+<script
+    src="https://www.chatbase.co/embed.min.js"
+    chatbotId="jzV34yA5HiOYG51VpfjN9"
+    domain="www.chatbase.co"
+    defer>
+</script>
+
 <?php
 get_footer();
+
