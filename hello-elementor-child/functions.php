@@ -221,4 +221,26 @@ function drx_auto_configure_store_settings() {
 }
 add_action('init', 'drx_auto_configure_store_settings', 5);
 
+/**
+ * 5. Nhúng Chatbot AI (Chatbase) vào góc màn hình toàn bộ website
+ */
+function drx_embed_chatbase_ai() {
+    ?>
+    <script>
+    window.embeddedChatbotConfig = {
+        chatbotId: "jzV34yA5HiOYG51VpfjN9",
+        domain: "www.chatbase.co"
+    };
+    </script>
+    <script
+        src="https://www.chatbase.co/embed.min.js"
+        chatbotId="jzV34yA5HiOYG51VpfjN9"
+        domain="www.chatbase.co"
+        defer>
+    </script>
+    <?php
+}
+add_action('wp_footer', 'drx_embed_chatbase_ai', 99);
+
+
 
