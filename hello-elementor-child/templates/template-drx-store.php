@@ -294,19 +294,52 @@ $site_logo_url = $custom_logo_id ? wp_get_attachment_image_url($custom_logo_id, 
         </button>
     </div>
     <div class="cart-body" id="cartBody">
-        <div style="text-align:center; padding: 40px; color: var(--text-muted);"><?php _e('Your cart is currently empty.', 'hello-elementor-child'); ?></div>
+        <?php
+        if (class_exists('WooCommerce') && WC()->cart && !WC()->cart->is_empty()) :
+            foreach (WC()->cart->get_cart() as $cart_item_key => $cart_item) :
+                $_prod = isset($cart_item['data']) ? $cart_item['data'] : null;
+                if (!$_prod || !$_prod->exists() || empty($cart_item['quantity'])) continue;
+
+                $img = wp_get_attachment_image_url($_prod->get_image_id(), 'thumbnail');
+                if (!$img) {
+                    $img = drx_store_get_image($_prod, false);
+                }
+                $item_size = isset($cart_item['drx_size']) ? $cart_item['drx_size'] : (isset($cart_item['variation']['attribute_pa_size']) ? $cart_item['variation']['attribute_pa_size'] : '');
+                $custom_id = isset($cart_item['drx_custom_id']) ? $cart_item['drx_custom_id'] : '';
+                ?>
+                <div class="cart-item" data-key="<?php echo esc_attr($cart_item_key); ?>">
+                    <img src="<?php echo esc_url($img ?: wc_placeholder_img_src()); ?>" class="cart-item-img" alt="<?php echo esc_attr($_prod->get_name()); ?>">
+                    <div class="cart-item-details">
+                        <div class="cart-item-title"><?php echo esc_html($_prod->get_name()); ?></div>
+                        <?php if (!empty($item_size)) : ?>
+                            <div class="cart-item-meta" style="color: #475569; font-size: 12px; font-weight: 600; margin-top: 2px;">Size: <?php echo esc_html($item_size); ?></div>
+                        <?php endif; ?>
+                        <?php if (!empty($custom_id)) : ?>
+                            <div class="cart-item-meta" style="color: var(--accent); font-size: 12px; font-weight: 600; margin-top: 2px;">Custom ID: <?php echo esc_html($custom_id); ?></div>
+                        <?php endif; ?>
+                        <div class="cart-item-bottom">
+                            <span style="font-size: 13px; color: var(--text-muted);">Qty: <?php echo esc_html($cart_item['quantity']); ?></span>
+                            <span style="font-weight: 700; color: var(--accent); font-size: 14px;"><?php echo WC()->cart->get_product_subtotal($_prod, $cart_item['quantity']); ?></span>
+                        </div>
+                    </div>
+                    <button class="cart-item-remove" onclick="removeCartItem('<?php echo esc_js($cart_item_key); ?>')" title="Xóa sản phẩm" style="background:none; border:none; color:#94A3B8; cursor:pointer; font-size:20px; line-height:1; padding:4px 8px; border-radius:4px; transition:color 0.2s;">&times;</button>
+                </div>
+            <?php endforeach; ?>
+        <?php else : ?>
+            <div class="cart-empty" style="text-align:center; padding: 40px; color: var(--text-muted);"><?php _e('Your cart is currently empty.', 'hello-elementor-child'); ?></div>
+        <?php endif; ?>
     </div>
     <div class="cart-footer">
         <div class="cart-total-row">
             <span><?php _e('Total:', 'hello-elementor-child'); ?></span>
-            <span id="cartTotal">0 ₫</span>
+            <span id="cartTotal"><?php echo (class_exists('WooCommerce') && WC()->cart) ? WC()->cart->get_cart_total() : '0 ₫'; ?></span>
         </div>
-        <a href="<?php echo esc_url(wc_get_checkout_url()); ?>" class="btn-primary-checkout"><?php _e('Proceed to Checkout', 'hello-elementor-child'); ?></a>
+        <a href="<?php echo esc_url(drx_get_safe_checkout_url()); ?>" class="btn-primary-checkout"><?php _e('PROCEED TO CHECKOUT', 'hello-elementor-child'); ?></a>
     </div>
 </div>
 
 <!-- DRX NATIVE AI CHATBOT WIDGET (GIAO DIỆN TRẮNG - XANH ELECTRIC SIÊU ĐẸP) -->
-<div id="drxChatWidgetWrap" style="position: fixed; bottom: 24px; right: 24px; z-index: 9999999; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;">
+<div id="drxChatWidgetWrap" style="position: fixed; bottom: 24px; right: 24px; z-index: 99990; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;">
     <!-- Nút tròn mở Chatbot -->
     <button id="drxChatToggleBtn" onclick="toggleDrxChat()" style="display: flex; align-items: center; gap: 10px; padding: 12px 20px; background: #0052FF; color: #ffffff; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 10px 25px rgba(0,82,255,0.35); font-size: 14px; font-weight: 700; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); outline: none;">
         <span style="display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; background: rgba(255,255,255,0.2); border-radius: 50%;">

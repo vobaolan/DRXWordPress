@@ -438,11 +438,67 @@
 	window.openCart = function () {
 		$('#cartOverlay').addClass('active');
 		$('#cartSidebar').addClass('active');
+		fetchLiveCart();
 	};
 
 	window.closeCart = function () {
 		$('#cartOverlay').removeClass('active');
 		$('#cartSidebar').removeClass('active');
+	};
+
+	function fetchLiveCart() {
+		let ajaxUrl = (typeof drx_ajax_obj !== 'undefined' && drx_ajax_obj.ajax_url) ? drx_ajax_obj.ajax_url : '/wp-admin/admin-ajax.php';
+		try {
+			const parsed = new URL(ajaxUrl, window.location.origin);
+			ajaxUrl = parsed.pathname + parsed.search;
+		} catch (e) {
+			ajaxUrl = '/wp-admin/admin-ajax.php';
+		}
+		const ajaxNonce = (typeof drx_ajax_obj !== 'undefined' && drx_ajax_obj.nonce) ? drx_ajax_obj.nonce : '';
+
+		$.ajax({
+			url: ajaxUrl,
+			type: 'POST',
+			data: {
+				action: 'drx_get_cart',
+				security: ajaxNonce
+			},
+			success: function (res) {
+				if (res.success && res.data) {
+					$('#cartCount, .drx-cart-count').text(res.data.cart_count);
+					renderCartDrawerItems(res.data);
+				}
+			}
+		});
+	}
+
+	window.removeCartItem = function (cartItemKey) {
+		let ajaxUrl = (typeof drx_ajax_obj !== 'undefined' && drx_ajax_obj.ajax_url) ? drx_ajax_obj.ajax_url : '/wp-admin/admin-ajax.php';
+		try {
+			const parsed = new URL(ajaxUrl, window.location.origin);
+			ajaxUrl = parsed.pathname + parsed.search;
+		} catch (e) {
+			ajaxUrl = '/wp-admin/admin-ajax.php';
+		}
+		const ajaxNonce = (typeof drx_ajax_obj !== 'undefined' && drx_ajax_obj.nonce) ? drx_ajax_obj.nonce : '';
+
+		$(`.cart-item[data-key="${cartItemKey}"]`).css('opacity', '0.4');
+
+		$.ajax({
+			url: ajaxUrl,
+			type: 'POST',
+			data: {
+				action: 'drx_remove_from_cart',
+				cart_item_key: cartItemKey,
+				security: ajaxNonce
+			},
+			success: function (res) {
+				if (res.success && res.data) {
+					$('#cartCount, .drx-cart-count').text(res.data.cart_count);
+					renderCartDrawerItems(res.data);
+				}
+			}
+		});
 	};
 
 	function renderCartDrawerItems(data) {
@@ -456,7 +512,7 @@
 		}
 
 		let html = data.items.map(item => `
-			<div class="cart-item">
+			<div class="cart-item" data-key="${item.key}">
 				<img src="${item.image}" class="cart-item-img" alt="${item.product_name}">
 				<div class="cart-item-details">
 					<div class="cart-item-title">${item.product_name}</div>
@@ -467,6 +523,7 @@
 						<span style="font-weight: 700; color: var(--accent); font-size: 14px;">${item.subtotal}</span>
 					</div>
 				</div>
+				<button class="cart-item-remove" onclick="removeCartItem('${item.key}')" title="Xóa sản phẩm" style="background:none; border:none; color:#94A3B8; cursor:pointer; font-size:20px; line-height:1; padding:4px 8px; border-radius:4px; transition:color 0.2s;">&times;</button>
 			</div>
 		`).join('');
 

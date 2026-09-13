@@ -528,41 +528,88 @@ function drx_ajax_add_to_cart() {
     }
 
     if ($cart_item_key) {
-        $cart_count = WC()->cart->get_cart_contents_count();
-        $cart_total = WC()->cart->get_cart_total();
-        
-        $items = array();
-        foreach (WC()->cart->get_cart() as $key => $item) {
-            $_prod = $item['data'];
-            $img = wp_get_attachment_image_url($_prod->get_image_id(), 'thumbnail');
-            if (!$img) {
-                $img = drx_store_get_image($_prod, false);
-            }
-            $item_size = isset($item['drx_size']) ? $item['drx_size'] : (isset($item['variation']['attribute_pa_size']) ? $item['variation']['attribute_pa_size'] : '');
-            $items[] = array(
-                'key'          => $key,
-                'product_name' => $_prod->get_name(),
-                'price'        => wc_price($_prod->get_price()),
-                'quantity'     => $item['quantity'],
-                'subtotal'     => wc_price($_prod->get_price() * $item['quantity']),
-                'image'        => $img ?: wc_placeholder_img_src(),
-                'custom_id'    => isset($item['drx_custom_id']) ? $item['drx_custom_id'] : '',
-                'size'         => $item_size
-            );
-        }
-
-        wp_send_json_success(array(
-            'cart_count'   => $cart_count,
-            'cart_total'   => $cart_total,
-            'items'        => $items,
-            'checkout_url' => drx_get_safe_checkout_url()
-        ));
+        wp_send_json_success(drx_get_current_cart_data());
     }
 
     wp_send_json_error(array('message' => 'Unable to add product to cart. Please try again.'));
 }
 add_action('wp_ajax_drx_add_to_cart', 'drx_ajax_add_to_cart');
 add_action('wp_ajax_nopriv_drx_add_to_cart', 'drx_ajax_add_to_cart');
+
+/**
+ * Helper lấy dữ liệu giỏ hàng chuẩn thời gian thực
+ */
+function drx_get_current_cart_data() {
+    if (!class_exists('WooCommerce') || !WC()->cart) {
+        return array(
+            'cart_count'   => 0,
+            'cart_total'   => '0 ₫',
+            'items'        => array(),
+            'checkout_url' => drx_get_safe_checkout_url()
+        );
+    }
+
+    $cart_count = WC()->cart->get_cart_contents_count();
+    $cart_total = WC()->cart->get_cart_total();
+    
+    $items = array();
+    foreach (WC()->cart->get_cart() as $key => $item) {
+        $_prod = isset($item['data']) ? $item['data'] : null;
+        if (!$_prod || !$_prod->exists() || empty($item['quantity'])) continue;
+
+        $img = wp_get_attachment_image_url($_prod->get_image_id(), 'thumbnail');
+        if (!$img) {
+            $img = drx_store_get_image($_prod, false);
+        }
+        $item_size = isset($item['drx_size']) ? $item['drx_size'] : (isset($item['variation']['attribute_pa_size']) ? $item['variation']['attribute_pa_size'] : '');
+        $items[] = array(
+            'key'          => $key,
+            'product_name' => $_prod->get_name(),
+            'price'        => wc_price($_prod->get_price()),
+            'quantity'     => $item['quantity'],
+            'subtotal'     => WC()->cart->get_product_subtotal($_prod, $item['quantity']),
+            'image'        => $img ?: wc_placeholder_img_src(),
+            'custom_id'    => isset($item['drx_custom_id']) ? $item['drx_custom_id'] : '',
+            'size'         => $item_size
+        );
+    }
+
+    return array(
+        'cart_count'   => $cart_count,
+        'cart_total'   => $cart_total,
+        'items'        => $items,
+        'checkout_url' => drx_get_safe_checkout_url()
+    );
+}
+
+/**
+ * AJAX: Lấy danh sách sản phẩm trong giỏ hàng thời gian thực
+ */
+function drx_ajax_get_cart() {
+    if (isset($_POST['security']) && !empty($_POST['security'])) {
+        wp_verify_nonce(sanitize_text_field($_POST['security']), 'drx_store_nonce');
+    }
+    wp_send_json_success(drx_get_current_cart_data());
+}
+add_action('wp_ajax_drx_get_cart', 'drx_ajax_get_cart');
+add_action('wp_ajax_nopriv_drx_get_cart', 'drx_ajax_get_cart');
+
+/**
+ * AJAX: Xóa sản phẩm khỏi giỏ hàng từ Cart Drawer
+ */
+function drx_ajax_remove_from_cart() {
+    if (isset($_POST['security']) && !empty($_POST['security'])) {
+        wp_verify_nonce(sanitize_text_field($_POST['security']), 'drx_store_nonce');
+    }
+    $cart_item_key = isset($_POST['cart_item_key']) ? sanitize_text_field($_POST['cart_item_key']) : '';
+    if (!empty($cart_item_key) && class_exists('WooCommerce') && WC()->cart) {
+        WC()->cart->remove_cart_item($cart_item_key);
+        WC()->cart->calculate_totals();
+    }
+    wp_send_json_success(drx_get_current_cart_data());
+}
+add_action('wp_ajax_drx_remove_from_cart', 'drx_ajax_remove_from_cart');
+add_action('wp_ajax_nopriv_drx_remove_from_cart', 'drx_ajax_remove_from_cart');
 
 // Hiển thị Size và Custom ID ở trang Checkout & Hóa đơn
 add_filter('woocommerce_get_item_data', function($item_data, $cart_item) {
