@@ -552,7 +552,7 @@
 	};
 
 	window.executeTrackOrder = function () {
-		const phone = $('#trackPhone').val().trim();
+		const phoneOrEmail = $('#trackPhone').val().trim();
 		const orderId = $('#trackOrderId').val().trim().toUpperCase();
 		const $btn = $('#btnTrackOrder');
 		const $errorBox = $('#trackErrorMsg');
@@ -560,66 +560,144 @@
 
 		$errorBox.hide();
 
-		if (!phone || !orderId) {
-			$errorText.text("Please enter both Phone Number and Order ID.");
-			$errorBox.show();
+		if (!orderId) {
+			$errorText.text("Vui lòng nhập Mã đơn hàng (ví dụ: 143 hoặc #143).");
+			$errorBox.css('display', 'flex');
 			return;
 		}
 
-		$btn.text("Searching...").prop('disabled', true);
+		$btn.html('<span style="display:inline-block; width:16px; height:16px; border:2px solid #fff; border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite; vertical-align:middle; margin-right:8px;"></span> ĐANG TRA CỨU...').prop('disabled', true);
+
+		let ajaxUrl = (typeof drx_ajax_obj !== 'undefined' && drx_ajax_obj.ajax_url) ? drx_ajax_obj.ajax_url : '/wp-admin/admin-ajax.php';
+		try {
+			const parsed = new URL(ajaxUrl, window.location.origin);
+			ajaxUrl = parsed.pathname + parsed.search;
+		} catch (e) {
+			ajaxUrl = '/wp-admin/admin-ajax.php';
+		}
+		const ajaxNonce = (typeof drx_ajax_obj !== 'undefined' && drx_ajax_obj.nonce) ? drx_ajax_obj.nonce : '';
 
 		$.ajax({
-			url: drx_ajax_obj.ajax_url,
+			url: ajaxUrl,
 			type: 'POST',
 			data: {
 				action: 'drx_track_order',
-				phone: phone,
 				order_id: orderId,
-				security: drx_ajax_obj.nonce
+				phone: phoneOrEmail,
+				security: ajaxNonce
 			},
 			success: function (res) {
-				$btn.text("VERIFY & TRACK").prop('disabled', false);
+				$btn.text("TRA CỨU ĐƠN HÀNG").prop('disabled', false);
 				if (res.success && res.data) {
 					const order = res.data;
-					const statusClass = order.status.toUpperCase();
-					let statusColor = '#0052FF';
-					if (statusClass.includes('SHIP') || statusClass.includes('COMPLET')) statusColor = '#10B981';
-					if (statusClass.includes('CANCEL')) statusColor = '#EF4444';
+					const step = order.progress_step || 1;
+					
+					// Timeline classes
+					const step1Class = step >= 1 ? 'done' : '';
+					const step2Class = step === 2 ? 'active' : (step > 2 ? 'done' : '');
+					const step3Class = step === 3 ? 'active' : (step > 3 ? 'done' : '');
+					const step4Class = step >= 4 ? 'done' : '';
+
+					let statusBg = '#0052FF';
+					if (order.status_slug === 'completed') statusBg = '#10B981';
+					if (order.status_slug === 'cancelled' || order.status_slug === 'failed') statusBg = '#EF4444';
+					if (order.status_slug === 'processing') statusBg = '#F59E0B';
 
 					let itemsHtml = (order.items || []).map(it => `
-						<div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;">
-							<span>${it.name} (x${it.qty})</span>
-							<span style="font-weight:600;">${it.subtotal}</span>
+						<div style="display:flex; gap:12px; padding:12px 0; border-bottom:1px solid #F1F5F9; align-items:center;">
+							<img src="${it.image}" alt="${it.product_name}" style="width:52px; height:52px; object-fit:contain; background:#F8FAFC; border-radius:8px; border:1px solid #E2E8F0; flex-shrink:0;">
+							<div style="flex:1; min-width:0;">
+								<div style="font-weight:700; font-size:13.5px; color:#0F172A; line-height:1.3; margin-bottom:2px;">${it.product_name}</div>
+								${it.size ? `<span style="display:inline-block; font-size:11px; background:#F1F5F9; color:#475569; padding:2px 6px; border-radius:4px; margin-right:6px; font-weight:600;">Size: ${it.size}</span>` : ''}
+								${it.custom_id ? `<span style="display:inline-block; font-size:11px; background:#EFF6FF; color:#0052FF; padding:2px 6px; border-radius:4px; font-weight:600;">Custom ID: ${it.custom_id}</span>` : ''}
+								<div style="font-size:12px; color:#64748B; margin-top:3px;">Số lượng: <strong>x${it.qty}</strong></div>
+							</div>
+							<div style="font-weight:700; color:#0F172A; font-size:14px; text-align:right;">
+								${it.subtotal}
+							</div>
 						</div>
 					`).join('');
 
 					$('#trackStatusCard').html(`
-						<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid #E2E8F0; padding-bottom:12px;">
+						<!-- Order Header -->
+						<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; padding-bottom:14px; border-bottom:1.5px solid #E2E8F0;">
 							<div>
-								<div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">ORDER NUMBER</div>
-								<div style="font-family:var(--font-heading); font-size:16px; font-weight:700; color:var(--text-primary);">${order.order_id}</div>
+								<div style="font-size:11px; font-weight:800; color:#64748B; text-transform:uppercase; letter-spacing:0.8px;">MÃ ĐƠN HÀNG</div>
+								<div style="font-family:var(--font-heading); font-size:22px; font-weight:900; color:#0F172A; letter-spacing:0.5px;">${order.order_id}</div>
+								<div style="font-size:12px; color:#94A3B8; margin-top:2px;">Ngày đặt: ${order.date}</div>
 							</div>
-							<span style="background:${statusColor}; color:white; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; text-transform:uppercase;">${order.status}</span>
+							<span style="background:${statusBg}; color:white; padding:6px 14px; border-radius:30px; font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+								${order.status}
+							</span>
 						</div>
-						<div style="margin-bottom:14px;">${itemsHtml}</div>
-						<div style="border-top:1px solid #E2E8F0; padding-top:10px; display:flex; justify-content:space-between; font-weight:700; font-size:15px;">
-							<span>TOTAL:</span>
-							<span style="color:var(--accent);">${order.total}</span>
+
+						<!-- Visual Progress Bar -->
+						<div class="track-progress-bar">
+							<div class="track-step ${step1Class}">
+								<div class="track-step-dot">${step >= 1 ? '✓' : '1'}</div>
+								<div class="track-step-label">Đã đặt</div>
+							</div>
+							<div class="track-step ${step2Class}">
+								<div class="track-step-dot">${step > 2 ? '✓' : '2'}</div>
+								<div class="track-step-label">Đang xử lý</div>
+							</div>
+							<div class="track-step ${step3Class}">
+								<div class="track-step-dot">${step > 3 ? '✓' : '3'}</div>
+								<div class="track-step-label">Đang giao</div>
+							</div>
+							<div class="track-step ${step4Class}">
+								<div class="track-step-dot">${step >= 4 ? '✓' : '4'}</div>
+								<div class="track-step-label">Đã nhận</div>
+							</div>
+						</div>
+
+						<!-- Items List -->
+						<div style="margin-bottom:18px;">
+							<div style="font-size:12px; font-weight:800; color:#64748B; text-transform:uppercase; margin-bottom:8px; letter-spacing:0.5px;">SẢN PHẨM TRONG ĐƠN</div>
+							<div style="max-height:180px; overflow-y:auto;">${itemsHtml}</div>
+						</div>
+
+						<!-- Financial & Payment Summary -->
+						<div style="background:#F8FAFC; border-radius:12px; padding:16px; margin-bottom:16px; border:1px solid #E2E8F0;">
+							<div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px; color:#475569;">
+								<span>Tạm tính:</span>
+								<span>${order.subtotal}</span>
+							</div>
+							<div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px; color:#475569;">
+								<span>Phí vận chuyển:</span>
+								<span>${order.shipping_total}</span>
+							</div>
+							<div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px; color:#475569;">
+								<span>Thanh toán:</span>
+								<span style="font-weight:600; color:#0F172A;">${order.payment_method}</span>
+							</div>
+							<div style="border-top:1.5px dashed #CBD5E1; padding-top:10px; margin-top:6px; display:flex; justify-content:space-between; align-items:center;">
+								<span style="font-weight:800; font-size:14px; color:#0F172A;">TỔNG THANH TOÁN:</span>
+								<span style="font-weight:900; font-size:18px; color:#0052FF;">${order.total}</span>
+							</div>
+						</div>
+
+						<!-- Customer Info & Shipping Address -->
+						<div style="font-size:12.5px; color:#475569; line-height:1.5; padding:12px 16px; background:#ffffff; border:1px solid #E2E8F0; border-radius:10px;">
+							<div><strong style="color:#0F172A;">Khách hàng:</strong> ${order.customer_name} (${order.phone})</div>
+							<div><strong style="color:#0F172A;">Email:</strong> ${order.email}</div>
+							<div style="margin-top:4px;"><strong style="color:#0F172A;">Địa chỉ nhận hàng:</strong> ${order.shipping_address}</div>
 						</div>
 					`);
 					$('#trackFormArea').hide();
 					$('#trackResultArea').show();
 				} else {
-					$errorText.text(res.data ? res.data.message : "No matching order found.");
-					$errorBox.show();
+					$errorText.text(res.data ? res.data.message : "Không tìm thấy đơn hàng. Vui lòng kiểm tra lại.");
+					$errorBox.css('display', 'flex');
 				}
 			},
 			error: function () {
-				$btn.text("VERIFY & TRACK").prop('disabled', false);
-				$errorText.text("Network error. Please try again.");
-				$errorBox.show();
+				$btn.text("TRA CỨU ĐƠN HÀNG").prop('disabled', false);
+				$errorText.text("Lỗi kết nối máy chủ. Vui lòng thử lại sau.");
+				$errorBox.css('display', 'flex');
 			}
 		});
 	};
 
 })(jQuery);
+

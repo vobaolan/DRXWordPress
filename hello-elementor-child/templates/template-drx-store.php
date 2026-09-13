@@ -232,53 +232,59 @@ $site_logo_url = $custom_logo_id ? wp_get_attachment_image_url($custom_logo_id, 
     </div>
 </div>
 
-<!-- MODAL: TRACK ORDER (D:\DRX\store.html) -->
+<!-- MODAL: TRACK ORDER (Tra cứu trạng thái đơn hàng) -->
 <div class="modal-overlay" id="trackOrderModal">
-    <div class="modal-content" style="max-width: 480px; flex-direction: column; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(16px); border: 1px solid rgba(0,0,0,0.08); border-radius: 20px; padding: 40px; box-shadow: 0 24px 48px rgba(0,0,0,0.12);">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px;">
+    <div class="modal-content" style="max-width: 650px; flex-direction: column; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(16px); border: 1px solid rgba(0,0,0,0.08); border-radius: 20px; padding: 36px; box-shadow: 0 24px 48px rgba(0,0,0,0.15); max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
             <div>
-                <h2 style="font-family: var(--font-heading); font-size: 24px; font-weight: 700; margin: 0; color: var(--text-primary); letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px;">
-                    <span style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: var(--accent); color: white; border-radius: 10px; box-shadow: 0 8px 16px rgba(0,82,255,0.25);">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                <h2 style="font-family: var(--font-heading); font-size: 24px; font-weight: 800; margin: 0; color: var(--text-primary); letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px;">
+                    <span style="display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; background: var(--accent); color: white; border-radius: 10px; box-shadow: 0 8px 16px rgba(0,82,255,0.25);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
                     </span>
                     <?php _e('Track Order', 'hello-elementor-child'); ?>
                 </h2>
-                <p style="font-size: 13px; color: var(--text-secondary); margin-top: 8px; font-weight: 500;"><?php _e('Securely view your purchase history.', 'hello-elementor-child'); ?></p>
+                <p style="font-size: 13.5px; color: var(--text-secondary); margin-top: 6px; font-weight: 500;"><?php _e('Tra cứu trạng thái và lộ trình giao hàng tức thì.', 'hello-elementor-child'); ?></p>
             </div>
             <button class="close-btn" onclick="closeTrackOrder()" style="position: static; font-size: 24px;">&times;</button>
         </div>
         
         <div id="trackFormArea">
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;"><?php _e('Phone Number', 'hello-elementor-child'); ?></label>
+            <div style="margin-bottom: 18px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;">
+                    <?php _e('MÃ ĐƠN HÀNG (ORDER NUMBER)', 'hello-elementor-child'); ?> <span style="color:#EF4444;">*</span>
+                </label>
                 <div style="position: relative;">
-                    <input type="text" id="trackPhone" placeholder="+84 987 654 321" style="width: 100%; padding: 16px 16px 16px 44px; border: 2px solid #E2E8F0; border-radius: 12px; font-family: inherit; font-size: 15px; font-weight: 500; color: var(--text-primary); transition: all 0.3s; background: #fff; outline: none;">
-                    <svg style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94A3B8;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                </div>
-            </div>
-            <div style="margin-bottom: 32px;">
-                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;"><?php _e('Order ID', 'hello-elementor-child'); ?></label>
-                <div style="position: relative;">
-                    <input type="text" id="trackOrderId" placeholder="DRX-..." style="width: 100%; padding: 16px 16px 16px 44px; border: 2px solid #E2E8F0; border-radius: 12px; font-family: var(--font-heading); font-size: 15px; font-weight: 700; color: var(--text-primary); text-transform: uppercase; transition: all 0.3s; background: #fff; outline: none; letter-spacing: 1px;">
+                    <input type="text" id="trackOrderId" placeholder="Ví dụ: 143, #143 hoặc DRX-143" style="width: 100%; padding: 15px 16px 15px 44px; border: 2px solid #E2E8F0; border-radius: 12px; font-family: inherit; font-size: 15px; font-weight: 600; color: var(--text-primary); transition: all 0.3s; background: #fff; outline: none; box-sizing: border-box;">
                     <svg style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94A3B8;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                 </div>
             </div>
+
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;">
+                    <?php _e('SỐ ĐIỆN THOẠI HOẶC EMAIL', 'hello-elementor-child'); ?> <span style="font-weight:400; color:#94A3B8; text-transform:none;">(Tùy chọn đối chiếu)</span>
+                </label>
+                <div style="position: relative;">
+                    <input type="text" id="trackPhone" placeholder="Ví dụ: 0987654321 hoặc volan258@gmail.com" style="width: 100%; padding: 15px 16px 15px 44px; border: 2px solid #E2E8F0; border-radius: 12px; font-family: inherit; font-size: 15px; font-weight: 500; color: var(--text-primary); transition: all 0.3s; background: #fff; outline: none; box-sizing: border-box;">
+                    <svg style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94A3B8;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                </div>
+            </div>
             
-            <div id="trackErrorMsg" style="display: none; padding: 12px 16px; background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 8px; color: #EF4444; font-size: 13px; font-weight: 500; margin-bottom: 24px; display: flex; align-items: center; gap: 8px;">
+            <div id="trackErrorMsg" style="display: none; padding: 12px 16px; background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 10px; color: #EF4444; font-size: 13.5px; font-weight: 500; margin-bottom: 20px; align-items: center; gap: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
                 <span id="trackErrorText"></span>
             </div>
 
-            <button class="btn-buy-now" id="btnTrackOrder" onclick="executeTrackOrder()" style="width: 100%; margin: 0; justify-content: center; border-radius: 12px; padding: 16px; font-size: 14px; letter-spacing: 1px; background: var(--text-primary); color: white; border: none; cursor: pointer; font-weight: 700;">
-                <?php _e('VERIFY & TRACK', 'hello-elementor-child'); ?>
+            <button class="btn-buy-now" id="btnTrackOrder" onclick="executeTrackOrder()" style="width: 100%; margin: 0; justify-content: center; border-radius: 12px; padding: 16px; font-size: 14.5px; letter-spacing: 1px; background: #0052FF; color: white; border: none; cursor: pointer; font-weight: 800; box-shadow: 0 8px 20px rgba(0,82,255,0.3); transition: all 0.25s;">
+                <?php _e('TRA CỨU ĐƠN HÀNG', 'hello-elementor-child'); ?>
             </button>
         </div>
 
         <div id="trackResultArea" style="display: none;">
-            <div id="trackStatusCard" style="padding: 24px; background: #fff; border: 2px solid #E2E8F0; border-radius: 16px; margin-bottom: 24px;">
-                <!-- Result injected here -->
+            <div id="trackStatusCard" style="padding: 24px; background: #fff; border: 1.5px solid #E2E8F0; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+                <!-- Result injected dynamically here -->
             </div>
-            <button onclick="resetTrackOrder()" style="width: 100%; padding: 14px; font-size: 13px; font-weight: 600; color: var(--text-secondary); background: transparent; border: 2px solid #E2E8F0; border-radius: 12px; cursor: pointer;">
-                <?php _e('Search Another Order', 'hello-elementor-child'); ?>
+            <button onclick="resetTrackOrder()" style="width: 100%; padding: 14px; font-size: 13.5px; font-weight: 700; color: #0052FF; background: #F1F5F9; border: 1.5px solid #E2E8F0; border-radius: 12px; cursor: pointer; transition: all 0.2s;">
+                <?php _e('Tra cứu đơn hàng khác', 'hello-elementor-child'); ?>
             </button>
         </div>
     </div>

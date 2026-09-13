@@ -890,3 +890,73 @@ main, .shop-main-wrapper {
 		gap: 8px;
 	}
 }
+
+/* Track Order Modal & Timeline */
+.track-progress-bar {
+	display: flex;
+	justify-content: space-between;
+	position: relative;
+	margin: 20px 0 28px 0;
+}
+.track-progress-bar::before {
+	content: '';
+	position: absolute;
+	top: 16px;
+	left: 10%;
+	right: 10%;
+	height: 3px;
+	background: #E2E8F0;
+	z-index: 1;
+}
+.track-step {
+	position: relative;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	width: 25%;
+}
+.track-step-dot {
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	background: #ffffff;
+	border: 3px solid #CBD5E1;
+	color: #94A3B8;
+	font-weight: 700;
+	font-size: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 8px;
+	transition: all 0.3s;
+}
+.track-step.done .track-step-dot {
+	background: #10B981;
+	border-color: #10B981;
+	color: #ffffff;
+	box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+.track-step.active .track-step-dot {
+	background: #0052FF;
+	border-color: #0052FF;
+	color: #ffffff;
+	box-shadow: 0 4px 12px rgba(0, 82, 255, 0.3);
+}
+.track-step-label {
+	font-size: 11px;
+	font-weight: 600;
+	color: #64748B;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	line-height: 1.2;
+}
+.track-step.active .track-step-label {
+	color: #0052FF;
+	font-weight: 700;
+}
+.track-step.done .track-step-label {
+	color: #0F172A;
+}
+

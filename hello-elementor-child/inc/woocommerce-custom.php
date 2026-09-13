@@ -644,61 +644,121 @@ function drx_get_safe_checkout_url() {
 }
 
 /**
- * 6. AJAX Endpoint: Tra cứu đơn hàng (Track Order)
+ * 6. AJAX Endpoint: Tra cứu đơn hàng (Track Order) thông minh & chi tiết
  */
 function drx_ajax_track_order() {
     if (isset($_POST['security']) && !empty($_POST['security'])) {
         wp_verify_nonce(sanitize_text_field($_POST['security']), 'drx_store_nonce');
     }
 
-    $phone = isset($_POST['phone']) ? sanitize_text_field(trim($_POST['phone'])) : '';
     $order_id_input = isset($_POST['order_id']) ? sanitize_text_field(trim($_POST['order_id'])) : '';
+    $phone_or_email = isset($_POST['phone']) ? sanitize_text_field(trim($_POST['phone'])) : '';
 
-    if (empty($phone) || empty($order_id_input)) {
-        wp_send_json_error(array('message' => 'Please enter both Phone Number and Order ID.'));
+    if (empty($order_id_input)) {
+        wp_send_json_error(array('message' => 'Vui lòng nhập Mã đơn hàng (ví dụ: 143 hoặc #143).'));
     }
 
-    // Tách mã số thực tế (nếu nhập DRX-12345 hoặc #12345)
+    // Tách mã số thực tế (nếu nhập DRX-143, #143, hoặc 143)
     $clean_order_id = preg_replace('/[^0-9]/', '', $order_id_input);
     if (!$clean_order_id) {
-        wp_send_json_error(array('message' => 'Invalid Order ID.'));
+        wp_send_json_error(array('message' => 'Mã đơn hàng không hợp lệ.'));
     }
 
     $order = wc_get_order((int)$clean_order_id);
     if (!$order) {
-        wp_send_json_error(array('message' => 'No matching order found.'));
+        wp_send_json_error(array('message' => 'Không tìm thấy đơn hàng #' . esc_html($clean_order_id) . '. Vui lòng kiểm tra lại.'));
     }
 
-    // So sánh số điện thoại đặt hàng
-    $billing_phone = preg_replace('/[^0-9]/', '', $order->get_billing_phone());
-    $input_phone_digits = preg_replace('/[^0-9]/', '', $phone);
+    // Nếu người dùng có nhập Số điện thoại hoặc Email, tiến hành xác thực đối chiếu
+    if (!empty($phone_or_email)) {
+        $billing_phone = preg_replace('/[^0-9]/', '', $order->get_billing_phone());
+        $billing_email = strtolower(trim($order->get_billing_email()));
+        $input_clean_phone = preg_replace('/[^0-9]/', '', $phone_or_email);
+        $input_email = strtolower(trim($phone_or_email));
 
-    if ($billing_phone !== $input_phone_digits && !str_ends_with($billing_phone, $input_phone_digits)) {
-        wp_send_json_error(array('message' => 'Phone number does not match this Order ID.'));
+        $phone_match = (!empty($input_clean_phone) && !empty($billing_phone) && (
+            $billing_phone === $input_clean_phone || 
+            str_ends_with($billing_phone, $input_clean_phone) || 
+            str_ends_with($input_clean_phone, $billing_phone)
+        ));
+
+        $email_match = (!empty($input_email) && !empty($billing_email) && $billing_email === $input_email);
+
+        if (!$phone_match && !$email_match) {
+            // Cho phép tìm nhanh nếu số điện thoại nhập gần đúng hoặc cung cấp cảnh báo
+            if (strlen($input_clean_phone) > 6 && !str_contains($billing_phone, $input_clean_phone)) {
+                wp_send_json_error(array('message' => 'Số điện thoại hoặc Email không trùng khớp với đơn hàng #' . $order->get_id()));
+            }
+        }
     }
 
     // Thu thập danh sách sản phẩm trong đơn hàng
     $items = array();
     foreach ($order->get_items() as $item_id => $item) {
-        $custom_id_meta = $item->get_meta(__('Tên may trên áo', 'hello-elementor-child'));
+        $_prod = $item->get_product();
+        $img = '';
+        if ($_prod) {
+            $img = wp_get_attachment_image_url($_prod->get_image_id(), 'thumbnail');
+            if (!$img) {
+                $img = drx_store_get_image($_prod, false);
+            }
+        }
+        $custom_id_meta = $item->get_meta(__('Tên may trên áo', 'hello-elementor-child')) ?: $item->get_meta('drx_custom_id');
+        $size_meta = $item->get_meta('pa_size') ?: ($item->get_meta('Size') ?: $item->get_meta('drx_size'));
+
         $items[] = array(
             'product_name' => $item->get_name(),
             'qty'          => $item->get_quantity(),
-            'total'        => wc_price($item->get_total()),
-            'custom_id'    => $custom_id_meta ?: ''
+            'price'        => wc_price($item->get_total() / max(1, $item->get_quantity())),
+            'subtotal'     => wc_price($item->get_total()),
+            'image'        => $img ?: 'https://teamdrx.vercel.app/thumbnail/20260727/aa447560a8495.png',
+            'custom_id'    => $custom_id_meta ?: '',
+            'size'         => $size_meta ?: ''
         );
     }
 
     $status_label = wc_get_order_status_name($order->get_status());
     $status_slug = $order->get_status();
 
+    // Xác định giai đoạn tiến trình (Step 1-4)
+    $progress_step = 1;
+    if (in_array($status_slug, array('processing', 'on-hold'))) {
+        $progress_step = 2;
+    } elseif (in_array($status_slug, array('shipping', 'dispatched', 'in-transit'))) {
+        $progress_step = 3;
+    } elseif (in_array($status_slug, array('completed'))) {
+        $progress_step = 4;
+    } elseif (in_array($status_slug, array('cancelled', 'refunded', 'failed'))) {
+        $progress_step = 0; // Hủy
+    }
+
+    $customer_name = trim($order->get_billing_first_name() . ' ' . $order->get_billing_last_name());
+    if (empty($customer_name)) {
+        $customer_name = 'Quý khách DRX';
+    }
+
+    $shipping_address = trim($order->get_formatted_shipping_address());
+    if (empty($shipping_address)) {
+        $shipping_address = trim($order->get_formatted_billing_address());
+    }
+
     wp_send_json_success(array(
-        'order_id'    => 'DRX-' . $order->get_id(),
-        'date'        => $order->get_date_created()->date('d/m/Y H:i'),
-        'status'      => strtoupper($status_label),
-        'status_slug' => $status_slug,
-        'total'       => wc_price($order->get_total()),
-        'items'       => $items
+        'order_id'         => '#' . $order->get_id(),
+        'order_number'     => $order->get_id(),
+        'date'             => $order->get_date_created() ? $order->get_date_created()->date('d/m/Y - H:i') : '',
+        'status'           => strtoupper($status_label),
+        'status_slug'      => $status_slug,
+        'progress_step'    => $progress_step,
+        'customer_name'    => $customer_name,
+        'email'            => $order->get_billing_email() ?: '---',
+        'phone'            => $order->get_billing_phone() ?: '---',
+        'payment_method'   => $order->get_payment_method_title() ?: 'Thanh toán khi nhận hàng (COD)',
+        'shipping_method'  => $order->get_shipping_method() ?: 'Giao hàng Tiêu chuẩn',
+        'subtotal'         => wc_price($order->get_subtotal()),
+        'shipping_total'   => wc_price($order->get_shipping_total()),
+        'total'            => wc_price($order->get_total()),
+        'shipping_address' => $shipping_address ?: 'Nhận tại cửa hàng hoặc địa chỉ thanh toán',
+        'items'            => $items
     ));
 }
 add_action('wp_ajax_drx_track_order', 'drx_ajax_track_order');
