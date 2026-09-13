@@ -413,6 +413,8 @@ $site_logo_url = $custom_logo_id ? wp_get_attachment_image_url($custom_logo_id, 
 </div>
 
 <script>
+window.DRX_STORE_CATALOG = <?php echo json_encode(array_values($products_list)); ?>;
+
 function toggleDrxChat() {
     var box = document.getElementById('drxChatBox');
     if (box.style.display === 'none' || box.style.display === '') {
@@ -454,7 +456,7 @@ function handleDrxSend() {
         typing.style.display = 'none';
         appendDrxBotMsg(reply);
         scrollDrxChat();
-    }, 600);
+    }, 500);
 }
 
 function appendDrxUserMsg(txt) {
@@ -485,50 +487,142 @@ function escapeHtml(text) {
 }
 
 function getDrxAiResponse(q) {
-    var s = q.toLowerCase();
+    var s = q.toLowerCase().trim();
 
-    // 1. Thanh toán 50% / Cọc / Trả trước / Trả nốt (Ưu tiên số 1)
+    // 1. Thanh toán 50% / Cọc / Trả trước / Trả nốt (Ưu tiên)
     if (s.includes('50%') || s.includes('cọc') || s.includes('trả nốt') || s.includes('trả trước') || s.includes('thanh toán trước') || (s.includes('thanh toán') && (s.includes('50') || s.includes('trước') || s.includes('nốt')))) {
         return "Dạ hiện tại DRX Store áp dụng 2 hình thức thanh toán chính thức: <b>Thanh toán khi nhận hàng (COD)</b> hoặc <b>Chuyển khoản ngân hàng 100%</b> khi đặt hàng.<br><br>Shop <b>chưa hỗ trợ hình thức đặt cọc hoặc trả trước 50%</b> nhận hàng trả nốt, mong anh/chị thông cảm giúp shop nhé ạ!";
     }
 
-    // 2. Câu hỏi lạc đề / Thời tiết
-    if (s.includes('thời tiết') || s.includes('mưa') || s.includes('nắng') || s.includes('sài gòn') || s.includes('chính trị') || s.includes('viết bài') || s.includes('làm văn')) {
-        return "Dạ câu hỏi này ngoài phạm vi tư vấn bán hàng của shop rồi ạ. Em xin phép được hỗ trợ anh/chị về các mẫu áo đấu, bảng size, phụ kiện và chính sách mua sắm của <b>DRX Store</b> nhé ạ! 😊";
+    // 2. Câu hỏi lạc đề
+    if (s.includes('thời tiết') || s.includes('mưa') || s.includes('nắng') || s.includes('chính trị') || s.includes('viết bài') || s.includes('làm văn')) {
+        return "Dạ câu hỏi này ngoài phạm vi tư vấn của DRX Store rồi ạ. Em xin phép được hỗ trợ anh/chị về các mẫu áo đấu chính hãng, bảng size, phụ kiện và chính sách mua sắm của <b>DRX Store</b> nhé ạ! 😊";
     }
 
-    // 3. So sánh T-Shirt và Windbreaker / Tư vấn size
-    if ((s.includes('t-shirt') || s.includes('áo đấu') || s.includes('jersey') || s.includes('so sánh')) && (s.includes('windbreaker') || s.includes('áo khoác') || s.includes('khác nhau') || s.includes('học'))) {
-        return "Dạ, <b>Áo thi đấu 26 S2 T-Shirt (750.000₫)</b> sử dụng chất liệu thun co giãn 4 chiều thoáng khí thấm hút mồ hôi tối đa; còn <b>Áo khoác Windbreaker (1.150.000₫)</b> được may bằng vải dù Polyester chống nước nhẹ cản gió, có túi khóa tiện lợi nên rất phù hợp để mặc đi học, đi làm ngoài đường.<br><br>Nếu anh/chị cao khoảng 1m75 nặng 68kg, shop tư vấn anh/chị chọn <b>Size L</b> để mặc thoải mái và chuẩn phom nhất nhé ạ!";
+    // 3. Tra cứu sản phẩm trong Catalog của Store (DYNAMIC PRODUCT SEARCH & RAG)
+    var catalog = window.DRX_STORE_CATALOG || [];
+    var matchedProducts = [];
+
+    // Tách các từ khóa tìm kiếm
+    var cleanQuery = s.replace(/áo|quần|nón|bình|lót chuột|pad|chuột|bàn phím|giá|bao nhiêu|bán|tiền|mua|ở đâu|còn không|size|màu|đang|cho mình hỏi|shop ơi|shop/g, ' ').trim();
+    var queryTokens = cleanQuery.split(/\s+/).filter(function(t) { return t.length >= 2; });
+
+    catalog.forEach(function(item) {
+        var nameLower = item.name.toLowerCase();
+        var catLower = (item.categories || '').toLowerCase();
+        var score = 0;
+
+        // Trùng cả cụm tên
+        if (s.includes(nameLower) || nameLower.includes(cleanQuery)) {
+            score += 10;
+        }
+
+        // So khớp từng từ khóa
+        queryTokens.forEach(function(token) {
+            if (nameLower.includes(token)) score += 3;
+            if (catLower.includes(token)) score += 1;
+        });
+
+        // Đặc thù các mã sản phẩm HOT (pink, 3rd, lilka, baseball, marking, gymsack, bracelet, sleeve, capsule, towel, bandana, card holder, mousepad, ticketholder, strap, prx, jeogori, photocard, away, home, jumper, t-shirt)
+        var specialKeywords = ['pink', '3rd', 'lilka', 'baseball', 'marking', 'gymsack', 'bracelet', 'sleeve', 'capsule', 'towel', 'bandana', 'magsafe', 'mousepad', 'ticketholder', 'strap', 'badge', 'tote', 'jeogori', 'photocard', 'rugby', 'jumper', 'pants', 't-shirt'];
+        specialKeywords.forEach(function(kw) {
+            if (s.includes(kw) && nameLower.includes(kw)) {
+                score += 5;
+            }
+        });
+
+        if (score > 0) {
+            matchedProducts.push({ item: item, score: score });
+        }
+    });
+
+    // Sắp xếp theo độ phù hợp cao nhất
+    matchedProducts.sort(function(a, b) { return b.score - a.score; });
+
+    // Nếu tìm thấy sản phẩm trùng khớp
+    if (matchedProducts.length > 0) {
+        if (matchedProducts.length === 1 || matchedProducts[0].score >= 8) {
+            var p = matchedProducts[0].item;
+            return `Dạ sản phẩm <b>${p.name}</b> chính hãng hiện đang được bán tại DRX Store với giá niêm yết là <b style="color:#0052FF; font-size:15px;">${p.price_html}</b> ạ! 💙<br><br>` +
+                   `<div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:12px; display:flex; gap:12px; align-items:center; margin:8px 0;">` +
+                   `<img src="${p.img_main}" alt="${p.name}" style="width:60px; height:60px; object-fit:contain; border-radius:8px; background:#fff; border:1px solid #E2E8F0;">` +
+                   `<div style="flex:1;">` +
+                   `<div style="font-weight:700; font-size:13px; color:#0F172A;">${p.name}</div>` +
+                   `<div style="font-weight:800; font-size:14px; color:#0052FF; margin-top:2px;">${p.price_html}</div>` +
+                   `<div style="font-size:11px; color:#10B981; font-weight:600; margin-top:2px;">● Đang có sẵn hàng (Full size)</div>` +
+                   `</div>` +
+                   `</div>` +
+                   `<button onclick="openProduct(${p.id}); toggleDrxChat();" style="display:inline-block; width:100%; margin-top:6px; padding:10px 14px; background:#0052FF; color:white; border:none; border-radius:8px; font-weight:700; font-size:12.5px; cursor:pointer; text-align:center; box-shadow:0 4px 12px rgba(0,82,255,0.25);">👉 Xem chi tiết & Đặt mua ngay</button>`;
+        } else {
+            // Hiển thị danh sách các sản phẩm liên quan khớp từ khóa
+            var topMatches = matchedProducts.slice(0, 3);
+            var listHtml = topMatches.map(function(m) {
+                var p = m.item;
+                return `<div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:10px; display:flex; gap:10px; align-items:center; margin-bottom:8px;">` +
+                       `<img src="${p.img_main}" alt="${p.name}" style="width:50px; height:50px; object-fit:contain; border-radius:6px; background:#fff;">` +
+                       `<div style="flex:1; min-width:0;">` +
+                       `<div style="font-weight:700; font-size:12.5px; color:#0F172A; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</div>` +
+                       `<div style="font-weight:800; font-size:13px; color:#0052FF;">${p.price_html}</div>` +
+                       `</div>` +
+                       `<button onclick="openProduct(${p.id}); toggleDrxChat();" style="padding:6px 10px; background:#0052FF; color:white; border:none; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap;">Xem</button>` +
+                       `</div>`;
+            }).join('');
+
+            return `Dạ shop tìm thấy các mẫu sản phẩm liên quan đến câu hỏi của anh/chị như sau ạ: 💙<br><br>${listHtml}`;
+        }
     }
 
-    // 4. Chính sách đổi trả & Hoàn tiền
-    if (s.includes('đổi') || s.includes('hoàn tiền') || s.includes('không vừa') || s.includes('rộng') || s.includes('chật') || s.includes('đổi size') || s.includes('đổi trả')) {
+    // 4. Tư vấn chọn size
+    if (s.includes('size') || s.includes('chọn size') || s.includes('bảng size') || s.includes('chiều cao') || s.includes('cân nặng') || s.includes('kg') || s.includes('m7') || s.includes('m6') || s.includes('m8')) {
+        return "Dạ bảng size áo đấu DRX chính hãng chuẩn form thể thao châu Á như sau ạ:<br><br>" +
+               "• <b>Size S</b>: 1m55 - 1m65 (48kg - 56kg)<br>" +
+               "• <b>Size M</b>: 1m65 - 1m72 (57kg - 65kg)<br>" +
+               "• <b>Size L</b>: 1m72 - 1m78 (66kg - 75kg)<br>" +
+               "• <b>Size XL</b>: 1m78 - 1m85 (76kg - 85kg)<br>" +
+               "• <b>Size 2XL</b>: Trên 1m85 hoặc trên 85kg<br><br>" +
+               "Nếu anh/chị muốn mặc rộng rãi (oversized style) có thể tăng lên 1 size nhé ạ!";
+    }
+
+    // 5. Chính sách đổi trả
+    if (s.includes('đổi') || s.includes('hoàn tiền') || s.includes('không vừa') || s.includes('rộng') || s.includes('chật') || s.includes('đổi trả')) {
         return "Dạ shop hỗ trợ đổi size hoặc hoàn tiền trong vòng <b>7 ngày</b> kể từ khi nhận hàng ạ. Điều kiện: sản phẩm còn nguyên tem mác, chưa qua giặt tẩy hay sử dụng. Đổi size hoàn toàn miễn phí, anh/chị chỉ cần thanh toán phí ship chiều gửi về thôi ạ!";
     }
 
-    // 5. Phí ship & Giao hàng (Cần Thơ / tỉnh xa / kiểm tra hàng)
-    if (s.includes('cần thơ') || s.includes('ship') || s.includes('giao hàng') || s.includes('bao lâu') || s.includes('kiểm tra') || s.includes('đồng kiểm') || s.includes('nhận được')) {
-        return "Dạ với các tỉnh thành ngoài TP.HCM (như Cần Thơ), phí vận chuyển toàn quốc là <b>50.000₫</b> cố định (nội thành TP.HCM là 30.000₫), thời gian nhận hàng từ <b>2–4 ngày làm việc</b>.<br><br>Đặc biệt, shop luôn hỗ trợ <b>đồng kiểm (kiểm tra hàng) trước khi thanh toán</b> nên anh/chị hoàn toàn yên tâm nhé ạ!";
+    // 6. Phí ship & Vận chuyển
+    if (s.includes('ship') || s.includes('vận chuyển') || s.includes('giao hàng') || s.includes('bao lâu') || s.includes('kiểm tra') || s.includes('đồng kiểm') || s.includes('nhận được') || s.includes('cần thơ') || s.includes('hà nội')) {
+        return "Dạ phí vận chuyển của DRX Store như sau ạ:<br><br>" +
+               "• <b>Nội thành TP.HCM</b>: 30.000₫ (1-2 ngày nhận hàng)<br>" +
+               "• <b>Toàn quốc (Hà Nội, Cần Thơ, Đà Nẵng,...)</b>: 50.000₫ (2-4 ngày nhận hàng)<br><br>" +
+               "Đặc biệt, shop luôn hỗ trợ <b>đồng kiểm (kiểm tra hàng trước khi thanh toán)</b> nên anh/chị hoàn toàn yên tâm nhé ạ!";
     }
 
-    // 6. Dịch vụ in tên thêu Custom ID
-    if (s.includes('in tên') || s.includes('thêu') || s.includes('custom') || s.includes('deft') || s.includes('faker')) {
-        return "Dạ dịch vụ thêu/in tên tuyển thủ hoặc tên cá nhân lên áo đấu DRX là <b>hoàn toàn MIỄN PHÍ</b> ạ! Khi chọn sản phẩm trên web, anh/chị chỉ cần nhập tên vào ô <i>'Custom Embroidered Name / ID'</i> là shop sẽ tiến hành in thêu sắc nét trước khi gửi hàng nhé!";
+    // 7. Thêu / In tên Custom ID
+    if (s.includes('in tên') || s.includes('thêu') || s.includes('custom') || s.includes('deft') || s.includes('faker') || s.includes('chovy')) {
+        return "Dạ dịch vụ thêu/in tên tuyển thủ hoặc tên cá nhân lên áo đấu DRX là <b>hoàn toàn MIỄN PHÍ</b> ạ! Khi chọn áo trên web, anh/chị chỉ cần nhập tên vào ô <i>'Tên / ID thêu áo'</i> là shop sẽ in thêu sắc nét trước khi đóng gói gửi đi nhé!";
     }
 
-    // 7. Tra cứu đơn hàng
-    if (s.includes('tra cứu') || s.includes('track') || s.includes('mã đơn')) {
-        return "Dạ anh/chị có thể tự tra cứu đơn hàng trực tiếp bằng cách bấm vào nút <b>'Track Order'</b> trên thanh menu đầu trang, sau đó nhập Số điện thoại và Mã đơn hàng để xem tiến độ giao hàng ngay lập tức nhé ạ!";
+    // 8. Tra cứu đơn hàng
+    if (s.includes('tra cứu') || s.includes('track') || s.includes('mã đơn') || s.includes('đơn hàng của tôi')) {
+        return "Dạ anh/chị có thể tự tra cứu đơn hàng trực tiếp bằng cách bấm vào nút <b>'Track Order'</b> trên thanh menu đầu trang, sau đó nhập Mã đơn hàng (ví dụ: #143) để xem tiến trình giao hàng ngay lập tức nhé ạ!";
     }
 
-    // 8. Phương thức thanh toán nói chung
+    // 9. Phương thức thanh toán
     if (s.includes('thanh toán') || s.includes('chuyển khoản') || s.includes('cod')) {
-        return "Dạ shop hỗ trợ 2 hình thức thanh toán: <b>Thanh toán khi nhận hàng (COD)</b> hoặc <b>Chuyển khoản ngân hàng 100%</b> khi đặt đơn trên website nhé ạ!";
+        return "Dạ DRX Store hỗ trợ 2 hình thức thanh toán chính thức: <b>Thanh toán khi nhận hàng (COD)</b> hoặc <b>Chuyển khoản ngân hàng 100%</b> khi đặt hàng trên website ạ!";
+    }
+
+    // 10. Danh mục / Tất cả sản phẩm
+    if (s.includes('sản phẩm') || s.includes('danh mục') || s.includes('có gì') || s.includes('bán gì') || s.includes('áo') || s.includes('phụ kiện')) {
+        return "Dạ hiện tại DRX Store có đầy đủ 4 bộ sưu tập chính hãng (24 sản phẩm) chuẩn 100% từ DRX Global:<br><br>" +
+               "1. <b>RELEASE</b>: Áo Baseball Uniform, Túi Gymsack, Vòng tay Logo, Capsule,...<br>" +
+               "2. <b>UNIFORM</b>: Áo đấu sân nhà/sân khách 2026, Áo T-Shirt 3RD Pink, Áo khoác Jumper, Quần Track Pants,...<br>" +
+               "3. <b>TEAM-KIT</b>: Khăn Beach Towel, Pad chuột Gaming, Bandana, MagSafe Card Holder, Dây đeo Strap,...<br>" +
+               "4. <b>COLABORATION</b>: Bộ sưu tập giới hạn DRX x PRX, DRX x Lilka Rugby Jersey, Talon Photocard,...<br><br>" +
+               "Anh/chị muốn tìm hiểu chi tiết mẫu nào có thể nhắn tên sản phẩm để em báo giá và tư vấn size ngay nhé ạ!";
     }
 
     // Mặc định
-    return "Dạ em đã ghi nhận câu hỏi của anh/chị. Anh/chị có thể để lại số điện thoại hoặc mô tả chi tiết hơn để nhân viên DRX Store hỗ trợ tư vấn chu đáo nhất nhé ạ!";
+    return "Dạ em đã ghi nhận câu hỏi của anh/chị. Anh/chị có thể nhập tên sản phẩm (ví dụ: <i>'áo 26 S1 Authentic T-Shirt 3RD Pink'</i>, <i>'áo Baseball'</i>, <i>'pad chuột'</i>) để em báo giá và hỗ trợ tư vấn ngay nhé ạ! 💙";
 }
 </script>
 
