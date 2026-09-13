@@ -145,10 +145,15 @@ function drx_filter_product_price($price, $product) {
 }
 
 function drx_ensure_vnd_currency() {
-    global $wpdb;
     if (!class_exists('WooCommerce')) {
         return;
     }
+
+    if (get_option('_drx_vnd_currency_optimized_v2') === 'yes') {
+        return;
+    }
+
+    global $wpdb;
 
     if (get_option('woocommerce_currency') !== 'VND') {
         update_option('woocommerce_currency', 'VND');
@@ -175,6 +180,8 @@ function drx_ensure_vnd_currency() {
             }
         }
     }
+
+    update_option('_drx_vnd_currency_optimized_v2', 'yes');
 }
 add_action('init', 'drx_ensure_vnd_currency', 1);
 

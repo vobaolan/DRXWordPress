@@ -11,6 +11,7 @@ if (!defined('ABSPATH')) {
 }
 
 // 1. Nạp các module PHP cốt lõi từ thư mục inc/
+require_once get_stylesheet_directory() . '/inc/admin-performance.php';
 require_once get_stylesheet_directory() . '/inc/cpt-lookbook.php';
 require_once get_stylesheet_directory() . '/inc/meta-boxes.php';
 require_once get_stylesheet_directory() . '/inc/woocommerce-custom.php';
