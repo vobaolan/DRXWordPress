@@ -985,10 +985,10 @@ function drx_auto_sync_authentic_products() {
 add_action('init', 'drx_auto_sync_authentic_products', 10);
 
 /**
- * Tự động dọn dẹp các sản phẩm rác (Ghost products) có giá 0đ và không có trong wp-admin
+ * Tự động dọn dẹp các sản phẩm rác và các sản phẩm mock cũ không có hình ảnh thật
  */
 function drx_cleanup_zero_price_ghost_products() {
-    $cleanup_key = '_drx_ghost_products_cleaned_v3';
+    $cleanup_key = '_drx_ghost_products_cleaned_v4';
     if (get_option($cleanup_key) === 'yes') {
         return;
     }
@@ -997,47 +997,69 @@ function drx_cleanup_zero_price_ghost_products() {
         return;
     }
 
-    $ghost_query = new WP_Query(array(
+    // Danh sách 24 SKU sản phẩm chính hãng DRX chuẩn 100%
+    $valid_skus = array(
+        'DRX-REL-01', 'DRX-REL-02', 'DRX-REL-03', 'DRX-REL-04', 'DRX-REL-05', 'DRX-REL-06',
+        'DRX-UNI-01', 'DRX-UNI-02', 'DRX-UNI-03', 'DRX-UNI-04', 'DRX-UNI-05', 'DRX-UNI-06',
+        'DRX-KIT-01', 'DRX-KIT-02', 'DRX-KIT-03', 'DRX-KIT-04', 'DRX-KIT-05', 'DRX-KIT-06',
+        'DRX-COL-01', 'DRX-COL-02', 'DRX-COL-03', 'DRX-COL-04', 'DRX-COL-05', 'DRX-COL-06'
+    );
+
+    // Danh sách tên sản phẩm mock cũ cần xóa dứt điểm
+    $legacy_mock_names = array(
+        'DRX 2026 VALORANT ROSTER KEYCHAIN SET',
+        'DRX LOGO SNAPBACK CAP',
+        'DRX X STEELSERIES GAMING MOUSEPAD',
+        'DRX ROSTER ACRYLIC STAND',
+        'DRX LIGHTSTICK V2 ESPORTS EDITION',
+        'DRX PRO GAMING BACKPACK',
+        'DRX ESPORTS BANDANA & WRISTBAND COMBO',
+        'DRX WORLDS COMMEMORATIVE COIN SET',
+        'DRX UNBREAKABLE DRAGON TUMBLER 750ML',
+        'DRX X LOGITECH G PRO WIRELESS DRX EDITION',
+        'DRX X LOGITECH MECHANICAL KEYBOARD',
+        'DRX 2026 OFFICIAL HOODIE (BLACK)',
+        'DRX 2026 OVERSIZED GRAPHIC TEE',
+        'DRX CHAMPIONS BOMBER JACKET',
+        'DRX X PUMA LIMITED EDITION JERSEY',
+        'DRX CASUAL POLO SHIRT (NAVY)',
+        'DRX X MONSTER ENERGY COLLAB TEE',
+        '26 S2 AUTHENTIC WINDBREAKER JACKET',
+        '26 S2 AUTHENTIC TRACK PANTS',
+        '26 S2 AUTHENTIC T-SHIRT HOME (WHITE)',
+        '26 S2 AUTHENTIC T-SHIRT AWAY (NAVY)',
+        'DRX ESPORTS PRO ARM SLEEVE (PAIR)'
+    );
+
+    $all_products_query = new WP_Query(array(
         'post_type'      => 'product',
         'posts_per_page' => -1,
-        'post_status'    => 'any',
-        'meta_query'     => array(
-            'relation' => 'OR',
-            array(
-                'key'     => '_price',
-                'value'   => 0,
-                'compare' => '<=',
-                'type'    => 'NUMERIC'
-            ),
-            array(
-                'key'     => '_price',
-                'value'   => '',
-                'compare' => '='
-            ),
-            array(
-                'key'     => '_price',
-                'compare' => 'NOT EXISTS'
-            )
-        )
+        'post_status'    => 'any'
     ));
 
-    if ($ghost_query->have_posts()) {
-        while ($ghost_query->have_posts()) {
-            $ghost_query->the_post();
+    if ($all_products_query->have_posts()) {
+        while ($all_products_query->have_posts()) {
+            $all_products_query->the_post();
             $post_id = get_the_ID();
-            $sku = get_post_meta($post_id, '_sku', true);
-            $has_thumb = has_post_thumbnail($post_id);
+            $title   = trim(get_the_title());
+            $sku     = trim(get_post_meta($post_id, '_sku', true));
+            $price   = (float)get_post_meta($post_id, '_price', true);
 
-            // Bảo vệ các sản phẩm chính hãng hoặc sản phẩm có hình ảnh hợp lệ
-            if (!empty($sku) && strpos($sku, 'DRX-') === 0) {
-                continue;
-            }
-            if ($has_thumb) {
+            // 1. Kiểm tra nếu là SKU hợp lệ trong 24 sản phẩm chuẩn -> giữ lại
+            if (in_array($sku, $valid_skus)) {
                 continue;
             }
 
-            // Xóa triệt để sản phẩm rác không có ảnh và giá 0đ
-            wp_delete_post($post_id, true);
+            // 2. Nếu nằm trong danh sách mock cũ hoặc có giá <= 0 -> Xóa vĩnh viễn
+            if (in_array(strtoupper($title), array_map('strtoupper', $legacy_mock_names)) || $price <= 0) {
+                wp_delete_post($post_id, true);
+                continue;
+            }
+
+            // 3. Nếu không thuộc 24 SKU chuẩn và không có thumbnail thật gắn vào WordPress Media -> Xóa vĩnh viễn
+            if (!has_post_thumbnail($post_id)) {
+                wp_delete_post($post_id, true);
+            }
         }
         wp_reset_postdata();
     }

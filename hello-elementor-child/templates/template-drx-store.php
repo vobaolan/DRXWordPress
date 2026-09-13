@@ -40,6 +40,34 @@ if ($products_query->have_posts()) {
             continue;
         }
 
+        $legacy_mock_names = array(
+            'DRX 2026 VALORANT ROSTER KEYCHAIN SET',
+            'DRX LOGO SNAPBACK CAP',
+            'DRX X STEELSERIES GAMING MOUSEPAD',
+            'DRX ROSTER ACRYLIC STAND',
+            'DRX LIGHTSTICK V2 ESPORTS EDITION',
+            'DRX PRO GAMING BACKPACK',
+            'DRX ESPORTS BANDANA & WRISTBAND COMBO',
+            'DRX WORLDS COMMEMORATIVE COIN SET',
+            'DRX UNBREAKABLE DRAGON TUMBLER 750ML',
+            'DRX X LOGITECH G PRO WIRELESS DRX EDITION',
+            'DRX X LOGITECH MECHANICAL KEYBOARD',
+            'DRX 2026 OFFICIAL HOODIE (BLACK)',
+            'DRX 2026 OVERSIZED GRAPHIC TEE',
+            'DRX CHAMPIONS BOMBER JACKET',
+            'DRX X PUMA LIMITED EDITION JERSEY',
+            'DRX CASUAL POLO SHIRT (NAVY)',
+            'DRX X MONSTER ENERGY COLLAB TEE',
+            '26 S2 AUTHENTIC WINDBREAKER JACKET',
+            '26 S2 AUTHENTIC TRACK PANTS',
+            '26 S2 AUTHENTIC T-SHIRT HOME (WHITE)',
+            '26 S2 AUTHENTIC T-SHIRT AWAY (NAVY)',
+            'DRX ESPORTS PRO ARM SLEEVE (PAIR)'
+        );
+        if (in_array(strtoupper(trim($product->get_name())), array_map('strtoupper', $legacy_mock_names))) {
+            continue;
+        }
+
         $products_list[] = array(
             'id'        => $p_id,
             'name'      => $product->get_name(),
