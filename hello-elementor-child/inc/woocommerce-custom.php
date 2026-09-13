@@ -540,3 +540,330 @@ function drx_ajax_track_order() {
 }
 add_action('wp_ajax_drx_track_order', 'drx_ajax_track_order');
 add_action('wp_ajax_nopriv_drx_track_order', 'drx_ajax_track_order');
+
+/**
+ * 7. Tự động đồng bộ 24 sản phẩm chính hãng DRX vào CSDL WooCommerce (4 Danh mục x 6 Sản phẩm)
+ */
+function drx_auto_sync_authentic_products() {
+    if (!class_exists('WooCommerce')) {
+        return;
+    }
+
+    $sync_key = '_drx_products_24_catalog_synced_v5';
+    if (get_option($sync_key) === 'yes') {
+        return;
+    }
+
+    // Đảm bảo 4 danh mục chuẩn tồn tại
+    $categories = array(
+        'RELEASE'      => 'release',
+        'UNIFORM'      => 'uniform',
+        'TEAM-KIT'     => 'team-kit',
+        'COLABORATION' => 'colaboration'
+    );
+
+    $cat_ids = array();
+    foreach ($categories as $cat_name => $cat_slug) {
+        $term = get_term_by('slug', $cat_slug, 'product_cat');
+        if (!$term) {
+            $inserted = wp_insert_term($cat_name, 'product_cat', array('slug' => $cat_slug));
+            if (!is_wp_error($inserted)) {
+                $cat_ids[$cat_name] = $inserted['term_id'];
+            }
+        } else {
+            $cat_ids[$cat_name] = $term->term_id;
+        }
+    }
+
+    $products_data = array(
+        // === RELEASE (6 sản phẩm) ===
+        array(
+            'sku'         => 'DRX-REL-01',
+            'name'        => '26 BASEBALL UNIFORM',
+            'type'        => 'variable',
+            'price'       => 1750000,
+            'short_desc'  => 'Áo thi đấu bóng chày DRX mùa 2026 thiết kế phong cách thể thao hiện đại. [ALLOW_CUSTOM_ID]',
+            'desc'        => 'Áo bóng chày DRX chính hãng chất vải cao cấp thoáng mát. [ALLOW_CUSTOM_ID]',
+            'cats'        => array('RELEASE', 'UNIFORM'),
+            'is_apparel'  => true
+        ),
+        array(
+            'sku'         => 'DRX-REL-02',
+            'name'        => '26 SELF MARKING KIT (BASEBALL UNIFORM)',
+            'type'        => 'simple',
+            'price'       => 290000,
+            'short_desc'  => 'Bộ kit tự in tên số tuyển thủ dành cho áo bóng chày DRX 2026.',
+            'desc'        => 'Bộ decal nhiệt cao cấp in tên số bền bỉ không bong tróc.',
+            'cats'        => array('RELEASE'),
+            'is_apparel'  => false
+        ),
+        array(
+            'sku'         => 'DRX-REL-03',
+            'name'        => '26 GYMSACK',
+            'type'        => 'simple',
+            'price'       => 580000,
+            'short_desc'  => 'Túi rút thể thao DRX 2026 chống nước nhẹ tiện lợi mang đồ tập luyện.',
+            'desc'        => 'Túi dây rút DRX phong cách trẻ trung năng động.',
+            'cats'        => array('RELEASE', 'TEAM-KIT'),
+            'is_apparel'  => false
+        ),
+        array(
+            'sku'         => 'DRX-REL-04',
+            'name'        => '26 SYMBOL BRACELET',
+            'type'        => 'simple',
+            'price'       => 480000,
+            'short_desc'  => 'Vòng tay biểu tượng DRX 2026 chất liệu silicone cao cấp.',
+            'desc'        => 'Vòng đeo tay thể thao biểu tượng rồng DRX xanh Electric.',
+            'cats'        => array('RELEASE', 'TEAM-KIT'),
+            'is_apparel'  => false
+        ),
+        array(
+            'sku'         => 'DRX-REL-05',
+            'name'        => 'ARM SLEEVE',
+            'type'        => 'simple',
+            'price'       => 120000,
+            'short_desc'  => 'Ống tay thi đấu Esports DRX co giãn chống trơn trượt mỏi cổ tay.',
+            'desc'        => 'Cặp ống tay thể thao chuyên nghiệp dùng cho tuyển thủ thi đấu dài giờ.',
+            'cats'        => array('RELEASE', 'TEAM-KIT'),
+            'is_apparel'  => false
+        ),
+        array(
+            'sku'         => 'DRX-REL-06',
+            'name'        => '26 TEAM CAPSULE T-SHIRT',
+            'type'        => 'variable',
+            'price'       => 890000,
+            'short_desc'  => 'Áo thun bộ sưu tập Capsule DRX 2026 chất vải cotton 100%.',
+            'desc'        => 'Áo thun phom suông thoải mái in logo DRX phong cách tối giản.',
+            'cats'        => array('RELEASE'),
+            'is_apparel'  => true
+        ),
+
+        // === UNIFORM (6 sản phẩm) ===
+        array(
+            'sku'         => 'DRX-UNI-01',
+            'name'        => '26 S1 AUTHENTIC JUMPER 3RD(PINK)',
+            'type'        => 'variable',
+            'price'       => 2850000,
+            'short_desc'  => 'Áo khoác thi đấu phiên bản đặc biệt 3rd Pink DRX mùa 2026.',
+            'desc'        => 'Áo khoác jumper thi đấu màu hồng phấn phối xanh navy độc bản.',
+            'cats'        => array('UNIFORM'),
+            'is_apparel'  => true
+        ),
+        array(
+            'sku'         => 'DRX-UNI-02',
+            'name'        => '26 S1 AUTHENTIC T-SHIRT 3RD(PINK)',
+            'type'        => 'variable',
+            'price'       => 1850000,
+            'short_desc'  => 'Áo thi đấu chính thức bản 3rd Pink DRX 2026 thoáng khí. [ALLOW_CUSTOM_ID]',
+            'desc'        => 'Áo thi đấu thun thể thao co giãn 4 chiều màu hồng pastel. [ALLOW_CUSTOM_ID]',
+            'cats'        => array('UNIFORM'),
+            'is_apparel'  => true
+        ),
+        array(
+            'sku'         => 'DRX-UNI-03',
+            'name'        => '26 S1 UNIFORM PANTS',
+            'type'        => 'variable',
+            'price'       => 990000,
+            'short_desc'  => 'Quần dài thể thao thi đấu đồng bộ DRX 2026.',
+            'desc'        => 'Quần dài thi đấu phom dáng năng động với túi khóa kéo tiện ích.',
+            'cats'        => array('UNIFORM'),
+            'is_apparel'  => true
+        ),
+        array(
+            'sku'         => 'DRX-UNI-04',
+            'name'        => '26 S1 AUTHENTIC JUMPER AWAY(L.BLUE)',
+            'type'        => 'variable',
+            'price'       => 2850000,
+            'short_desc'  => 'Áo khoác thi đấu sân khách Light Blue DRX 2026 cao cấp.',
+            'desc'        => 'Áo khoác dù thi đấu cản gió chống nước màu xanh dương nhạt.',
+            'cats'        => array('UNIFORM'),
+            'is_apparel'  => true
+        ),
+        array(
+            'sku'         => 'DRX-UNI-05',
+            'name'        => '26 S1 AUTHENTIC T-SHIRT AWAY(L.BLUE)',
+            'type'        => 'variable',
+            'price'       => 1850000,
+            'short_desc'  => 'Áo thi đấu sân khách Light Blue DRX 2026. [ALLOW_CUSTOM_ID]',
+            'desc'        => 'Áo đấu sân khách màu xanh dương thanh lịch của các tuyển thủ DRX. [ALLOW_CUSTOM_ID]',
+            'cats'        => array('UNIFORM'),
+            'is_apparel'  => true
+        ),
+        array(
+            'sku'         => 'DRX-UNI-06',
+            'name'        => '26 S1 AUTHENTIC JUMPER HOME(NAVY)',
+            'type'        => 'variable',
+            'price'       => 2850000,
+            'short_desc'  => 'Áo khoác thi đấu sân nhà màu Navy huyền thoại DRX 2026.',
+            'desc'        => 'Áo khoác gió sân nhà chính thức của đội tuyển DRX tại giải LCK.',
+            'cats'        => array('UNIFORM'),
+            'is_apparel'  => true
+        ),
+
+        // === TEAM-KIT (6 sản phẩm) ===
+        array(
+            'sku'         => 'DRX-KIT-01',
+            'name'        => '26 LOGO BEACH TOWEL',
+            'type'        => 'simple',
+            'price'       => 420000,
+            'short_desc'  => 'Khăn tắm bãi biển in logo rồng DRX kích thước lớn 150x75cm.',
+            'desc'        => 'Khăn sợi bông cao cấp mềm mịn thấm hút nước cực tốt.',
+            'cats'        => array('TEAM-KIT'),
+            'is_apparel'  => false
+        ),
+        array(
+            'sku'         => 'DRX-KIT-02',
+            'name'        => '26 LOGO BANDANA',
+            'type'        => 'simple',
+            'price'       => 190000,
+            'short_desc'  => 'Khăn bandana vuông thời trang thêu biểu tượng DRX.',
+            'desc'        => 'Phụ kiện quàng cổ hoặc buộc đầu cá tính cho người hâm mộ.',
+            'cats'        => array('TEAM-KIT'),
+            'is_apparel'  => false
+        ),
+        array(
+            'sku'         => 'DRX-KIT-03',
+            'name'        => '26 MAGSAFE CARD HOLDER',
+            'type'        => 'simple',
+            'price'       => 350000,
+            'short_desc'  => 'Ví đựng thẻ hít nam châm MagSafe gắn lưng điện thoại logo DRX.',
+            'desc'        => 'Ví da PU cao cấp chứa được 2-3 thẻ tiện lợi.',
+            'cats'        => array('TEAM-KIT'),
+            'is_apparel'  => false
+        ),
+        array(
+            'sku'         => 'DRX-KIT-04',
+            'name'        => '26 MOUSEPAD',
+            'type'        => 'simple',
+            'price'       => 540000,
+            'short_desc'  => 'Lót chuột gaming bề mặt vải dệt siêu mượt điều khiển chính xác.',
+            'desc'        => 'Pad chuột thể thao điện tử DRX bo viền chắc chắn chống trượt.',
+            'cats'        => array('TEAM-KIT'),
+            'is_apparel'  => false
+        ),
+        array(
+            'sku'         => 'DRX-KIT-05',
+            'name'        => '26 TICKETHOLDER',
+            'type'        => 'simple',
+            'price'       => 350000,
+            'short_desc'  => 'Bao đựng vé thi đấu và thẻ đeo ban tổ chức DRX 2026.',
+            'desc'        => 'Túi đựng vé nhựa dẻo trong suốt kèm dây đeo cổ tiện dụng.',
+            'cats'        => array('TEAM-KIT'),
+            'is_apparel'  => false
+        ),
+        array(
+            'sku'         => 'DRX-KIT-06',
+            'name'        => '26 SMARTPHONE STRAP',
+            'type'        => 'simple',
+            'price'       => 220000,
+            'short_desc'  => 'Dây đeo điện thoại cổ tay phong cách thể thao DRX 2026.',
+            'desc'        => 'Dây đeo chịu lực cao chống rơi rớt điện thoại khi di chuyển.',
+            'cats'        => array('TEAM-KIT'),
+            'is_apparel'  => false
+        ),
+
+        // === COLABORATION (6 sản phẩm) ===
+        array(
+            'sku'         => 'DRX-COL-01',
+            'name'        => '24 DRX PRX METAL BADGE',
+            'type'        => 'simple',
+            'price'       => 190000,
+            'short_desc'  => 'Huy hiệu kim loại phiên bản kết hợp đặc biệt giữa DRX và Paper Rex.',
+            'desc'        => 'Huy hiệu đúc kim loại cao cấp ghim áo hoặc balo.',
+            'cats'        => array('COLABORATION'),
+            'is_apparel'  => false
+        ),
+        array(
+            'sku'         => 'DRX-COL-02',
+            'name'        => '24 DRX PRX CANVAS TOTE BAG',
+            'type'        => 'simple',
+            'price'       => 390000,
+            'short_desc'  => 'Túi tote vải canvas phong cách streetwear DRX x PRX.',
+            'desc'        => 'Túi vải dày dặn có quai xách chắc chắn in họa tiết độc quyền.',
+            'cats'        => array('COLABORATION'),
+            'is_apparel'  => false
+        ),
+        array(
+            'sku'         => 'DRX-COL-03',
+            'name'        => '24 DRX PRX S/S T-SHIRT',
+            'type'        => 'variable',
+            'price'       => 790000,
+            'short_desc'  => 'Áo thun tay ngắn hợp tác DRX x Paper Rex phiên bản giới hạn.',
+            'desc'        => 'Áo thun cotton cao cấp phom rộng phong cách hiện đại.',
+            'cats'        => array('COLABORATION'),
+            'is_apparel'  => true
+        ),
+        array(
+            'sku'         => 'DRX-COL-04',
+            'name'        => '24 DRX PRX JEOGORI',
+            'type'        => 'variable',
+            'price'       => 1550000,
+            'short_desc'  => 'Áo khoác cách tân Jeogori truyền thống Hàn Quốc phiên bản DRX x PRX.',
+            'desc'        => 'Mẫu áo khoác độc bản kết hợp nét truyền thống và văn hóa Esports.',
+            'cats'        => array('COLABORATION'),
+            'is_apparel'  => true
+        ),
+        array(
+            'sku'         => 'DRX-COL-05',
+            'name'        => 'TALON X DRX BUBBLEGUM SKY PHOTOCARD',
+            'type'        => 'simple',
+            'price'       => 380000,
+            'short_desc'  => 'Bộ thẻ ảnh sưu tầm phiên bản hợp tác Talon x DRX Bubblegum Sky.',
+            'desc'        => 'Set photocard tuyển thủ in hologram bắt sáng cực đẹp.',
+            'cats'        => array('COLABORATION'),
+            'is_apparel'  => false
+        ),
+        array(
+            'sku'         => 'DRX-COL-06',
+            'name'        => 'DRX X LILKA RUGBY JERSEY WHITE',
+            'type'        => 'variable',
+            'price'       => 1600000,
+            'short_desc'  => 'Áo đấu bóng bầu dục cổ bẻ phối sọc trắng hợp tác DRX x Lilka. [ALLOW_CUSTOM_ID]',
+            'desc'        => 'Áo đấu rugby chất vải cao cấp dày dặn phong cách thể thao cổ điển. [ALLOW_CUSTOM_ID]',
+            'cats'        => array('COLABORATION', 'UNIFORM'),
+            'is_apparel'  => true
+        ),
+    );
+
+    foreach ($products_data as $p) {
+        $p_id = wc_get_product_id_by_sku($p['sku']);
+        if (!$p_id) {
+            $existing_post = get_page_by_title($p['name'], OBJECT, 'product');
+            if ($existing_post) {
+                $p_id = $existing_post->ID;
+            }
+        }
+
+        if ($p_id) {
+            $product = wc_get_product($p_id);
+        } else {
+            $product = ($p['type'] === 'variable') ? new WC_Product_Variable() : new WC_Product_Simple();
+        }
+
+        if (!$product) continue;
+
+        $product->set_name($p['name']);
+        $product->set_sku($p['sku']);
+        $product->set_status('publish');
+        $product->set_catalog_visibility('visible');
+        $product->set_short_description($p['short_desc']);
+        $product->set_description($p['desc']);
+        $product->set_regular_price($p['price']);
+        $product->set_price($p['price']);
+        $product->set_manage_stock(true);
+        $product->set_stock_quantity(100);
+        $product->set_stock_status('instock');
+
+        $cat_term_ids = array();
+        foreach ($p['cats'] as $c) {
+            if (isset($cat_ids[$c])) {
+                $cat_term_ids[] = (int)$cat_ids[$c];
+            }
+        }
+        $product->set_category_ids($cat_term_ids);
+        $product->save();
+    }
+
+    update_option($sync_key, 'yes');
+}
+add_action('init', 'drx_auto_sync_authentic_products', 10);
