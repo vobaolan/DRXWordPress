@@ -144,7 +144,13 @@
 		$('#m_thumbnails').empty();
 		$('#m_right_content').html('<div style="text-align:center; padding: 40px; color: var(--text-muted);"><div style="display:inline-block; width:28px; height:28px; border:3px solid #E2E8F0; border-top-color:#0052FF; border-radius:50%; animation:spin 1s linear infinite; margin-bottom:12px;"></div><div>Đang tải thông tin sản phẩm...</div></div>');
 
-		const ajaxUrl = (typeof drx_ajax_obj !== 'undefined' && drx_ajax_obj.ajax_url) ? drx_ajax_obj.ajax_url : '/wp-admin/admin-ajax.php';
+		let ajaxUrl = (typeof drx_ajax_obj !== 'undefined' && drx_ajax_obj.ajax_url) ? drx_ajax_obj.ajax_url : '/wp-admin/admin-ajax.php';
+		try {
+			const parsed = new URL(ajaxUrl, window.location.origin);
+			ajaxUrl = parsed.pathname + parsed.search;
+		} catch (e) {
+			ajaxUrl = '/wp-admin/admin-ajax.php';
+		}
 		const ajaxNonce = (typeof drx_ajax_obj !== 'undefined' && drx_ajax_obj.nonce) ? drx_ajax_obj.nonce : '';
 
 		$.ajax({
@@ -375,7 +381,13 @@
 		const $btn = redirectCheckout ? $('#btnModalBuyNow') : $('#btnModalAddCart');
 		$btn.text('PROCESSING...').prop('disabled', true);
 
-		const ajaxUrl = (typeof drx_ajax_obj !== 'undefined' && drx_ajax_obj.ajax_url) ? drx_ajax_obj.ajax_url : '/wp-admin/admin-ajax.php';
+		let ajaxUrl = (typeof drx_ajax_obj !== 'undefined' && drx_ajax_obj.ajax_url) ? drx_ajax_obj.ajax_url : '/wp-admin/admin-ajax.php';
+		try {
+			const parsed = new URL(ajaxUrl, window.location.origin);
+			ajaxUrl = parsed.pathname + parsed.search;
+		} catch (e) {
+			ajaxUrl = '/wp-admin/admin-ajax.php';
+		}
 		const ajaxNonce = (typeof drx_ajax_obj !== 'undefined' && drx_ajax_obj.nonce) ? drx_ajax_obj.nonce : '';
 
 		$.ajax({

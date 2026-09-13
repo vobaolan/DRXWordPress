@@ -14,6 +14,101 @@ if (!defined('ABSPATH')) {
 }
 
 /**
+ * Helper lấy ảnh sản phẩm an toàn tuyệt đối (Đảm bảo 100% ảnh hiển thị sắc nét)
+ */
+if (!function_exists('drx_store_get_image')) {
+    function drx_store_get_image($product, $is_hover = false) {
+        if (is_numeric($product)) {
+            $product = wc_get_product($product);
+        }
+        if (!$product || !is_object($product)) {
+            return 'https://en.drxstyle.com/web/product/small/202605/d9d605a8f110bf0f159d3196e816593a.png';
+        }
+        
+        $name = method_exists($product, 'get_name') ? strtoupper($product->get_name()) : '';
+        $sku  = method_exists($product, 'get_sku') ? strtoupper($product->get_sku()) : '';
+        
+        // 1. Kiểm tra ảnh WordPress Media
+        if (method_exists($product, 'get_image_id')) {
+            $img_id = $product->get_image_id();
+            if (!$is_hover && $img_id) {
+                $src = wp_get_attachment_image_url($img_id, 'large') ?: wp_get_attachment_image_url($img_id, 'full');
+                if (!empty($src) && strpos($src, 'placeholder') === false) return $src;
+            }
+        }
+        
+        if ($is_hover && method_exists($product, 'get_gallery_image_ids')) {
+            $gallery_ids = $product->get_gallery_image_ids();
+            if (!empty($gallery_ids)) {
+                $src = wp_get_attachment_image_url($gallery_ids[0], 'large') ?: wp_get_attachment_image_url($gallery_ids[0], 'full');
+                if (!empty($src) && strpos($src, 'placeholder') === false) return $src;
+            }
+        }
+        
+        // 2. Tra cứu từ kho ảnh chính hãng DRX (en.drxstyle.com & Supabase)
+        $image_map = array(
+            'BASEBALL UNIFORM' => array('https://en.drxstyle.com/web/product/medium/202602/aa25ec1d244f77c8651a011ea370bfd4.png', 'https://en.drxstyle.com/web/image/uniform/26%20BASEBALL%20UNIFORM/DK26322TS01_B_1237.png'),
+            'MARKING KIT'      => array('https://en.drxstyle.com/web/product/small/202602/a32b005105221ee5f3a0cb1b6a15ca40.png', 'https://en.drxstyle.com/web/product/extra/small/202602/2efdf6e8971fce3fba61ee02ee89b91c.jpg'),
+            'GYMSACK'          => array('https://shop-t1.gg/web/product/big/202608/2a494df79259d9658304dad748986361.png', 'https://shop-t1.gg/web/product/big/202608/2a494df79259d9658304dad748986361.png'),
+            'BRACELET'         => array('https://en.drxstyle.com/web/product/small/202602/66f91722ea4ea70fcecb9efcfca31021.jpg', 'https://en.drxstyle.com/web/product/extra/small/202602/1075d9e5033c70f074d6ea6e8bfda739.jpg'),
+            'ARM SLEEVE'       => array('https://en.drxstyle.com/web/product/small/202607/a64564b4cd6fe082fe3ed41d16510215.png', 'https://en.drxstyle.com/web/image/goods/26/ARMSLEEVE%20V2/DRX%20ARM%20SLEEVES_2_EN%20(1).jpg'),
+            'SLEEVE'           => array('https://en.drxstyle.com/web/product/small/202607/a64564b4cd6fe082fe3ed41d16510215.png', 'https://en.drxstyle.com/web/image/goods/26/ARMSLEEVE%20V2/DRX%20ARM%20SLEEVES_2_EN%20(1).jpg'),
+            'CAPSULE'          => array('https://en.drxstyle.com/web/product/small/202605/eb171a4111de434ae85fe91876834b05.jpg', 'https://en.drxstyle.com/web/product/extra/small/202605/7a18614cab6cd1899c053c87b954874b.jpg'),
+            '3RD(PINK)'        => array('https://en.drxstyle.com/web/product/small/202602/fa1c1303c2783b8fc2eaeb7b09f3efab.jpg', 'https://en.drxstyle.com/web/product/extra/small/202602/33c20532bac3b50bbe6ab915ddf982a9.jpg'),
+            'PANTS'            => array('https://en.drxstyle.com/web/product/small/202607/a64564b4cd6fe082fe3ed41d16510215.png', 'https://en.drxstyle.com/web/product/extra/small/202607/7ff34b41304d306b3bc59f3cb16eebc8.png'),
+            'JUMPER AWAY'      => array('https://en.drxstyle.com/web/product/small/202605/5bcf2d3f35f4fb61ebec5f925128b337.png', 'https://en.drxstyle.com/web/product/extra/small/202605/737fcf378d70b97d7e54e0b75ae6471c.png'),
+            'T-SHIRT AWAY'     => array('https://en.drxstyle.com/web/product/small/202605/af75586977b7220ece2093f0bf2c562f.png', 'https://en.drxstyle.com/web/product/extra/small/202605/9fe66df51e040e92b55c8700d796bc14.png'),
+            'AWAY'             => array('https://en.drxstyle.com/web/product/small/202605/af75586977b7220ece2093f0bf2c562f.png', 'https://en.drxstyle.com/web/product/extra/small/202605/9fe66df51e040e92b55c8700d796bc14.png'),
+            'JUMPER HOME'      => array('https://en.drxstyle.com/web/product/small/202605/cc811049a5856cf981fdc8f38cedcf2f.png', 'https://en.drxstyle.com/web/product/extra/small/202605/d0dc36b7f99566dfe1ec0178d58a18b5.png'),
+            'HOME'             => array('https://en.drxstyle.com/web/product/small/202605/d9d605a8f110bf0f159d3196e816593a.png', 'https://en.drxstyle.com/web/product/extra/small/202605/73ff126d97f018b1729c3d1f7692aa7e.png'),
+            'BEACH TOWEL'      => array('https://en.drxstyle.com/web/product/small/202601/b5719f050e214aed992350abdf0a0d45.jpg', 'https://en.drxstyle.com/web/product/extra/small/202601/dae3aa5466b99931326515e862744a21.jpg'),
+            'BANDANA'          => array('https://en.drxstyle.com/web/product/small/202601/f719cbb4926e7d43137feb18452cf438.jpg', 'https://en.drxstyle.com/web/product/extra/small/202601/2e24680a371c89451463a30322262028.jpg'),
+            'CARD HOLDER'      => array('https://en.drxstyle.com/web/product/small/202601/1d87d6a91407ee08864d90626638aa58.jpg', 'https://en.drxstyle.com/web/product/extra/small/202601/08aaa1fc0d269670bc678c6014e5c098.jpg'),
+            'MAGSAFE'          => array('https://en.drxstyle.com/web/product/small/202601/1d87d6a91407ee08864d90626638aa58.jpg', 'https://en.drxstyle.com/web/product/extra/small/202601/08aaa1fc0d269670bc678c6014e5c098.jpg'),
+            'MOUSEPAD'         => array('https://en.drxstyle.com/web/product/small/202601/5711215598311cc6cea0112e4cc65078.jpg', 'https://en.drxstyle.com/web/image/goods/26/26%20MOUSEPAD/DK26133LF08_D1_1000.jpg'),
+            'TICKETHOLDER'     => array('https://en.drxstyle.com/web/product/small/202601/4bf8972f70e47a3233d22cab50c11f64.jpg', 'https://en.drxstyle.com/web/product/extra/small/202601/d826126727a0aac47040bd00525cd57e.jpg'),
+            'STRAP'            => array('https://en.drxstyle.com/web/product/small/202601/d588e6b729a51d99e7235903a18db31a.jpg', 'https://en.drxstyle.com/web/product/extra/small/202601/80e2545b4d74b0224aa8124d097b74d6.jpg'),
+            'BADGE'            => array('https://en.drxstyle.com/web/product/small/202407/fb63f8d610393045408dbe73ca09dcb6.png', 'https://en.drxstyle.com/web/product/extra/small/202407/b046851f805fa42db496f15f8d973327.png'),
+            'TOTE BAG'         => array('https://en.drxstyle.com/web/product/small/202407/b046851f805fa42db496f15f8d973327.png', 'https://en.drxstyle.com/web/product/small/202407/fb63f8d610393045408dbe73ca09dcb6.png'),
+            'PRX S/S'          => array('https://en.drxstyle.com/web/product/small/202407/57df46f69480cd5b083149c070182a82.png', 'https://en.drxstyle.com/web/product/extra/small/202407/a0cd77ce3f31af3d5262873abb8eba66.png'),
+            'JEOGORI'          => array('https://en.drxstyle.com/web/product/small/202407/a0cd77ce3f31af3d5262873abb8eba66.png', 'https://en.drxstyle.com/web/product/small/202407/57df46f69480cd5b083149c070182a82.png'),
+            'JEGOR'            => array('https://en.drxstyle.com/web/product/small/202407/a0cd77ce3f31af3d5262873abb8eba66.png', 'https://en.drxstyle.com/web/product/small/202407/57df46f69480cd5b083149c070182a82.png'),
+            'PHOTOCARD'        => array('https://en.drxstyle.com/web/product/small/202407/57df46f69480cd5b083149c070182a82.png', 'https://en.drxstyle.com/web/product/extra/small/202407/a0cd77ce3f31af3d5262873abb8eba66.png'),
+            'RUGBY JERSEY'     => array('https://en.drxstyle.com/web/product/small/202605/d9d605a8f110bf0f159d3196e816593a.png', 'https://en.drxstyle.com/web/product/extra/small/202605/73ff126d97f018b1729c3d1f7692aa7e.png'),
+            'LILKA'            => array('https://en.drxstyle.com/web/product/small/202605/d9d605a8f110bf0f159d3196e816593a.png', 'https://en.drxstyle.com/web/product/extra/small/202605/73ff126d97f018b1729c3d1f7692aa7e.png')
+        );
+        
+        foreach ($image_map as $key => $urls) {
+            if (strpos($name, $key) !== false || strpos($sku, $key) !== false) {
+                return $is_hover ? ($urls[1] ?: '') : $urls[0];
+            }
+        }
+        
+        return $is_hover ? '' : 'https://en.drxstyle.com/web/product/small/202605/d9d605a8f110bf0f159d3196e816593a.png';
+    }
+}
+
+if (!function_exists('drx_normalize_vnd_price')) {
+    function drx_normalize_vnd_price($price) {
+        $p = (float)$price;
+        if ($p > 0 && $p < 1000) {
+            return round(($p * 10000) / 10000) * 10000;
+        }
+        return $p;
+    }
+}
+
+if (!function_exists('drx_format_price')) {
+    function drx_format_price($price) {
+        $p = drx_normalize_vnd_price($price);
+        if (function_exists('wc_price')) {
+            return wc_price($p);
+        }
+        return number_format($p, 0, ',', '.') . ' ₫';
+    }
+}
+
+/**
  * 0. Đảm bảo toàn bộ hệ thống sử dụng tiền Việt Nam Đồng (VNĐ - ₫) chuẩn DRX
  */
 function drx_calc_vnd_price($usd_price) {
@@ -200,13 +295,24 @@ function drx_ajax_get_product_details() {
         $sizes = array('M', 'L', 'XL');
     }
 
+    $base_price = (float)$product->get_price();
+    if ($base_price <= 0) {
+        $base_price = (float)$product->get_regular_price();
+    }
+    if ($base_price <= 0) {
+        $base_price = (float)get_post_meta($product_id, '_price', true);
+    }
+    if ($base_price <= 0) {
+        $base_price = (float)get_post_meta($product_id, '_regular_price', true);
+    }
+    $base_price = drx_normalize_vnd_price($base_price);
+
     // Nếu sản phẩm có biến thể thực tế trong CSDL
     if ($product->is_type('variable')) {
         $available_variations = $product->get_available_variations();
         if (!empty($available_variations)) {
             foreach ($available_variations as $var) {
                 $v_id = $var['variation_id'];
-                $v_obj = wc_get_product($v_id);
                 $v_img = !empty($var['image']['src']) ? array($var['image']['src']) : $images;
 
                 $c_val = isset($var['attributes']['attribute_pa_color']) ? $var['attributes']['attribute_pa_color'] : (isset($var['attributes']['attribute_color']) ? $var['attributes']['attribute_color'] : '');
@@ -217,9 +323,12 @@ function drx_ajax_get_product_details() {
                     $sizes[] = strtoupper($s_val);
                 }
 
+                $var_price = isset($var['display_price']) && $var['display_price'] > 0 ? (float)$var['display_price'] : $base_price;
+                $var_price = drx_normalize_vnd_price($var_price);
+
                 $variants_data[] = array(
                     'id'       => $v_id,
-                    'price'    => (float)$product->get_price(), // Đảm bảo cùng giá
+                    'price'    => $var_price,
                     'stock'    => $var['is_in_stock'] ? 99 : 0,
                     'color'    => strtoupper($c_val),
                     'size'     => ($is_mousepad || $is_accessory) ? '' : strtoupper($s_val),
@@ -236,7 +345,7 @@ function drx_ajax_get_product_details() {
             foreach ($sizes as $s) {
                 $variants_data[] = array(
                     'id'     => 0,
-                    'price'  => (float)$product->get_price(), // Cùng giá
+                    'price'  => $base_price, // Cùng giá
                     'stock'  => 99,
                     'color'  => $c,
                     'size'   => $s,
@@ -250,7 +359,7 @@ function drx_ajax_get_product_details() {
     if (empty($variants_data)) {
         $variants_data[] = array(
             'id'       => 0,
-            'price'    => (float)$product->get_price(),
+            'price'    => $base_price,
             'stock'    => 99,
             'color'    => '',
             'size'     => '',
@@ -261,9 +370,9 @@ function drx_ajax_get_product_details() {
     $response = array(
         'id'               => $product_id,
         'name'             => $product->get_name(),
-        'price'            => (float)$product->get_price(),
-        'regular_price'    => (float)$product->get_regular_price(),
-        'price_html'       => $product->get_price_html(),
+        'price'            => $base_price,
+        'regular_price'    => $base_price,
+        'price_html'       => drx_format_price($base_price),
         'description'      => $desc,
         'allow_custom_id'  => $allow_custom_id,
         'is_apparel'       => $is_apparel,
