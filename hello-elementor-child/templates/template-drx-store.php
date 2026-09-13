@@ -194,10 +194,10 @@ $site_logo_url = $custom_logo_id ? wp_get_attachment_image_url($custom_logo_id, 
         <div class="footer-links">
             <h4>Customer Care</h4>
             <ul>
-                <li><a href="javascript:void(0)" onclick="openTrackOrder()">Track Your Order</a></li>
-                <li><a href="<?php echo esc_url(home_url('/contact')); ?>">Contact Us</a></li>
-                <li><a href="#">Shipping Policy</a></li>
-                <li><a href="#">Returns & Exchanges</a></li>
+                <li><a href="javascript:void(0)" onclick="openTrackOrder()"><?php _e('Track Your Order', 'hello-elementor-child'); ?></a></li>
+                <li><a href="javascript:void(0)" onclick="openContactModal()"><?php _e('Contact Us', 'hello-elementor-child'); ?></a></li>
+                <li><a href="javascript:void(0)" onclick="openShippingModal()"><?php _e('Shipping Policy', 'hello-elementor-child'); ?></a></li>
+                <li><a href="javascript:void(0)" onclick="openReturnsModal()"><?php _e('Returns & Exchanges', 'hello-elementor-child'); ?></a></li>
             </ul>
         </div>
         <div class="footer-social">
@@ -287,6 +287,201 @@ $site_logo_url = $custom_logo_id ? wp_get_attachment_image_url($custom_logo_id, 
                 <?php _e('Tra cứu đơn hàng khác', 'hello-elementor-child'); ?>
             </button>
         </div>
+    </div>
+</div>
+
+<!-- MODAL: CONTACT US -->
+<div class="modal-overlay" id="contactUsModal">
+    <div class="modal-content" style="max-width: 600px; flex-direction: column; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(16px); border: 1px solid rgba(0,0,0,0.08); border-radius: 20px; padding: 36px; box-shadow: 0 24px 48px rgba(0,0,0,0.15); max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+            <div>
+                <h2 style="font-family: var(--font-heading); font-size: 24px; font-weight: 800; margin: 0; color: var(--text-primary); letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px;">
+                    <span style="display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; background: #0052FF; color: white; border-radius: 10px; box-shadow: 0 8px 16px rgba(0,82,255,0.25);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    </span>
+                    <?php _e('Contact DRX Support', 'hello-elementor-child'); ?>
+                </h2>
+                <p style="font-size: 13.5px; color: var(--text-secondary); margin-top: 6px; font-weight: 500;"><?php _e('Chúng tôi luôn sẵn sàng hỗ trợ bạn về sản phẩm và đơn hàng.', 'hello-elementor-child'); ?></p>
+            </div>
+            <button class="close-btn" onclick="closeContactModal()" style="position: static; font-size: 24px;">&times;</button>
+        </div>
+
+        <!-- Contact Channels Info -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+            <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px;">
+                <div style="font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase;">HOTLINE HỖ TRỢ</div>
+                <div style="font-weight: 800; font-size: 15px; color: #0052FF; margin-top: 4px;">0987 654 321</div>
+                <div style="font-size: 11px; color: #10B981; margin-top: 2px;">● 8:30 - 22:00 hàng ngày</div>
+            </div>
+            <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px;">
+                <div style="font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase;">EMAIL CHÍNH THỨC</div>
+                <div style="font-weight: 800; font-size: 14px; color: #0F172A; margin-top: 4px;">support@drxstyle.vn</div>
+                <div style="font-size: 11px; color: #64748B; margin-top: 2px;">Phản hồi trong 30 phút</div>
+            </div>
+        </div>
+
+        <!-- Quick AI Assistance Button -->
+        <div style="background: linear-gradient(135deg, #EFF6FF, #DBEAFE); border: 1px solid #BFDBFE; border-radius: 14px; padding: 16px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 36px; height: 36px; background: #0052FF; color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 12px;">AI</div>
+                <div>
+                    <div style="font-weight: 700; font-size: 13.5px; color: #1E3A8A;">Cần giải đáp thắc mắc ngay lập tức?</div>
+                    <div style="font-size: 12px; color: #3B82F6;">Hỏi trực tiếp Trợ lý ảo DRX AI 24/7</div>
+                </div>
+            </div>
+            <button onclick="closeContactModal(); toggleDrxChat();" style="padding: 8px 16px; background: #0052FF; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 12.5px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,82,255,0.25); white-space: nowrap;">
+                Chat ngay
+            </button>
+        </div>
+
+        <!-- Quick Contact Message Form -->
+        <form id="drxContactForm" onsubmit="handleContactSubmit(event)">
+            <div style="margin-bottom: 14px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">HỌ VÀ TÊN <span style="color:#EF4444;">*</span></label>
+                <input type="text" id="contactName" required placeholder="Nhập họ và tên của bạn" style="width: 100%; padding: 12px 14px; border: 1.5px solid #E2E8F0; border-radius: 10px; font-family: inherit; font-size: 14px; outline: none; background: #fff; box-sizing: border-box;">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">SỐ ĐIỆN THOẠI <span style="color:#EF4444;">*</span></label>
+                    <input type="tel" id="contactPhone" required placeholder="098..." style="width: 100%; padding: 12px 14px; border: 1.5px solid #E2E8F0; border-radius: 10px; font-family: inherit; font-size: 14px; outline: none; background: #fff; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">EMAIL</label>
+                    <input type="email" id="contactEmail" placeholder="name@email.com" style="width: 100%; padding: 12px 14px; border: 1.5px solid #E2E8F0; border-radius: 10px; font-family: inherit; font-size: 14px; outline: none; background: #fff; box-sizing: border-box;">
+                </div>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">NỘI DUNG YÊU CẦU <span style="color:#EF4444;">*</span></label>
+                <textarea id="contactMsg" required rows="3" placeholder="Nhập câu hỏi hoặc yêu cầu hỗ trợ đơn hàng..." style="width: 100%; padding: 12px 14px; border: 1.5px solid #E2E8F0; border-radius: 10px; font-family: inherit; font-size: 14px; outline: none; background: #fff; box-sizing: border-box; resize: vertical;"></textarea>
+            </div>
+
+            <div id="contactSuccessMsg" style="display: none; padding: 12px 16px; background: #ECFDF5; border: 1px solid #6EE7B7; border-radius: 10px; color: #065F46; font-size: 13.5px; font-weight: 600; margin-bottom: 16px; align-items: center; gap: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"></path></svg>
+                <span>Cảm ơn bạn! Yêu cầu hỗ trợ đã được gửi thành công. Đội ngũ DRX sẽ liên hệ trong 15 phút.</span>
+            </div>
+
+            <button type="submit" id="btnContactSubmit" style="width: 100%; padding: 15px; background: #0052FF; color: white; border: none; border-radius: 12px; font-weight: 800; font-size: 14px; letter-spacing: 0.8px; cursor: pointer; box-shadow: 0 8px 20px rgba(0,82,255,0.3); transition: all 0.25s;">
+                GỬI YÊU CẦU HỖ TRỢ
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: SHIPPING POLICY -->
+<div class="modal-overlay" id="shippingPolicyModal">
+    <div class="modal-content" style="max-width: 650px; flex-direction: column; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(16px); border: 1px solid rgba(0,0,0,0.08); border-radius: 20px; padding: 36px; box-shadow: 0 24px 48px rgba(0,0,0,0.15); max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+            <div>
+                <h2 style="font-family: var(--font-heading); font-size: 24px; font-weight: 800; margin: 0; color: var(--text-primary); letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px;">
+                    <span style="display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; background: #0052FF; color: white; border-radius: 10px; box-shadow: 0 8px 16px rgba(0,82,255,0.25);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                    </span>
+                    <?php _e('Shipping Policy', 'hello-elementor-child'); ?>
+                </h2>
+                <p style="font-size: 13.5px; color: var(--text-secondary); margin-top: 6px; font-weight: 500;"><?php _e('Quy định biểu phí & thời gian giao nhận toàn quốc.', 'hello-elementor-child'); ?></p>
+            </div>
+            <button class="close-btn" onclick="closeShippingModal()" style="position: static; font-size: 24px;">&times;</button>
+        </div>
+
+        <!-- Biểu phí & Thời gian -->
+        <div style="background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 14px; overflow: hidden; margin-bottom: 20px;">
+            <div style="padding: 14px 18px; background: #F1F5F9; font-weight: 800; font-size: 13px; color: #0F172A; text-transform: uppercase; letter-spacing: 0.5px;">
+                BIỂU PHÍ & THỜI GIAN GIAO HÀNG
+            </div>
+            <div style="padding: 16px 18px; border-bottom: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="font-weight: 700; font-size: 14px; color: #0F172A;">Khu vực Nội thành TP. Hồ Chí Minh</div>
+                    <div style="font-size: 12px; color: #64748B; margin-top: 2px;">Thời gian nhận hàng: <strong>1 - 2 ngày làm việc</strong></div>
+                </div>
+                <div style="font-weight: 800; font-size: 15px; color: #0052FF;">30.000 ₫</div>
+            </div>
+            <div style="padding: 16px 18px; border-bottom: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="font-weight: 700; font-size: 14px; color: #0F172A;">Khu vực Toàn quốc (Hà Nội, Cần Thơ, Đà Nẵng,...)</div>
+                    <div style="font-size: 12px; color: #64748B; margin-top: 2px;">Thời gian nhận hàng: <strong>2 - 4 ngày làm việc</strong></div>
+                </div>
+                <div style="font-weight: 800; font-size: 15px; color: #0052FF;">50.000 ₫</div>
+            </div>
+            <div style="padding: 14px 18px; background: #ECFDF5; display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-weight: 700; font-size: 13.5px; color: #065F46;">Đơn hàng từ 2.000.000 ₫ trở lên</div>
+                <div style="font-weight: 900; font-size: 14px; color: #059669; text-transform: uppercase;">MIỄN PHÍ SHIP</div>
+            </div>
+        </div>
+
+        <!-- 3 Cam kết cốt lõi -->
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+            <div style="display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; background: #fff; border: 1px solid #E2E8F0; border-radius: 12px;">
+                <div style="width: 28px; height: 28px; background: #10B981; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex-shrink: 0;">✓</div>
+                <div style="font-size: 13px; color: #334155; line-height: 1.45;">
+                    <strong style="color: #0F172A;">Hỗ trợ Đồng kiểm 100%:</strong> Quý khách được quyền mở hộp kiểm tra đúng mẫu mã, màu sắc, kích cỡ trước khi thanh toán tiền cho nhân viên giao hàng.
+                </div>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; background: #fff; border: 1px solid #E2E8F0; border-radius: 12px;">
+                <div style="width: 28px; height: 28px; background: #0052FF; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex-shrink: 0;">★</div>
+                <div style="font-size: 13px; color: #334155; line-height: 1.45;">
+                    <strong style="color: #0F172A;">Đóng gói chuẩn DRX Esports:</strong> Mỗi chiếc áo đều được đặt trong túi zip niêm phong chống ẩm mốc và hộp carton chịu lực cao cấp chống biến dạng khi vận chuyển.
+                </div>
+            </div>
+        </div>
+
+        <button onclick="closeShippingModal()" style="width: 100%; padding: 14px; background: #F1F5F9; color: #0F172A; border: 1.5px solid #CBD5E1; border-radius: 12px; font-weight: 700; font-size: 13.5px; cursor: pointer; transition: all 0.2s;">
+            ĐÃ HIỂU & ĐÓNG
+        </button>
+    </div>
+</div>
+
+<!-- MODAL: RETURNS & EXCHANGES -->
+<div class="modal-overlay" id="returnsModal">
+    <div class="modal-content" style="max-width: 650px; flex-direction: column; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(16px); border: 1px solid rgba(0,0,0,0.08); border-radius: 20px; padding: 36px; box-shadow: 0 24px 48px rgba(0,0,0,0.15); max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+            <div>
+                <h2 style="font-family: var(--font-heading); font-size: 24px; font-weight: 800; margin: 0; color: var(--text-primary); letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px;">
+                    <span style="display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; background: #0052FF; color: white; border-radius: 10px; box-shadow: 0 8px 16px rgba(0,82,255,0.25);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 4v6h6"></path><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                    </span>
+                    <?php _e('Returns & Exchanges', 'hello-elementor-child'); ?>
+                </h2>
+                <p style="font-size: 13.5px; color: var(--text-secondary); margin-top: 6px; font-weight: 500;"><?php _e('Chính sách đổi size & hoàn tiền uy tín trong vòng 7 ngày.', 'hello-elementor-child'); ?></p>
+            </div>
+            <button class="close-btn" onclick="closeReturnsModal()" style="position: static; font-size: 24px;">&times;</button>
+        </div>
+
+        <!-- 3 Bước đổi trả nhanh -->
+        <div style="background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 14px; padding: 18px; margin-bottom: 20px;">
+            <div style="font-size: 12px; font-weight: 800; color: #64748B; text-transform: uppercase; margin-bottom: 14px; letter-spacing: 0.5px;">QUY TRÌNH ĐỔI TRẢ 3 BƯỚC ĐƠN GIẢN</div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center;">
+                <div style="background: #fff; padding: 12px; border-radius: 10px; border: 1px solid #E2E8F0;">
+                    <div style="width: 28px; height: 28px; background: #0052FF; color: white; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px;">1</div>
+                    <div style="font-weight: 700; font-size: 12.5px; color: #0F172A;">Liên hệ CSKH</div>
+                    <div style="font-size: 11px; color: #64748B; margin-top: 2px;">Qua Hotline hoặc Chat AI</div>
+                </div>
+                <div style="background: #fff; padding: 12px; border-radius: 10px; border: 1px solid #E2E8F0;">
+                    <div style="width: 28px; height: 28px; background: #0052FF; color: white; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px;">2</div>
+                    <div style="font-weight: 700; font-size: 12.5px; color: #0F172A;">Gửi sản phẩm</div>
+                    <div style="font-size: 11px; color: #64748B; margin-top: 2px;">Bưu tá đến nhận tận nhà</div>
+                </div>
+                <div style="background: #fff; padding: 12px; border-radius: 10px; border: 1px solid #E2E8F0;">
+                    <div style="width: 28px; height: 28px; background: #10B981; color: white; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px;">3</div>
+                    <div style="font-weight: 700; font-size: 12.5px; color: #0F172A;">Nhận hàng mới</div>
+                    <div style="font-size: 11px; color: #64748B; margin-top: 2px;">Đổi size mới sau 2-3 ngày</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Điều kiện đổi trả -->
+        <div style="font-size: 13px; color: #334155; line-height: 1.6; margin-bottom: 24px;">
+            <div style="font-weight: 800; font-size: 13.5px; color: #0F172A; margin-bottom: 8px;">ĐIỀU KIỆN ÁP DỤNG:</div>
+            <ul style="padding-left: 20px; margin: 0 0 14px 0;">
+                <li>Thời hạn đổi trả trong vòng <strong>07 ngày</strong> kể từ ngày quý khách nhận được kiện hàng.</li>
+                <li>Sản phẩm phải còn <strong>nguyên tem, nhãn mác, túi zip niêm phong</strong> và chưa qua giặt tẩy hay sử dụng.</li>
+                <li>Hỗ trợ <strong>đổi size hoàn toàn miễn phí</strong>. Quý khách chỉ thanh toán cước phí gửi hàng 1 chiều.</li>
+                <li>Hoàn tiền 100% đối với trường hợp hàng bị lỗi may mặc hoặc gửi nhầm mẫu mã.</li>
+            </ul>
+        </div>
+
+        <button onclick="closeReturnsModal()" style="width: 100%; padding: 14px; background: #0052FF; color: white; border: none; border-radius: 12px; font-weight: 800; font-size: 13.5px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,82,255,0.25);">
+            ĐÃ HIỂU & ĐÓNG
+        </button>
     </div>
 </div>
 
@@ -414,6 +609,73 @@ $site_logo_url = $custom_logo_id ? wp_get_attachment_image_url($custom_logo_id, 
 
 <script>
 window.DRX_STORE_CATALOG = <?php echo json_encode(array_values($products_list)); ?>;
+
+function openContactModal() {
+    var modal = document.getElementById('contactUsModal');
+    if (modal) {
+        modal.classList.add('active');
+        modal.style.display = 'flex';
+    }
+}
+function closeContactModal() {
+    var modal = document.getElementById('contactUsModal');
+    if (modal) {
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+        var msg = document.getElementById('contactSuccessMsg');
+        if (msg) msg.style.display = 'none';
+    }
+}
+
+function openShippingModal() {
+    var modal = document.getElementById('shippingPolicyModal');
+    if (modal) {
+        modal.classList.add('active');
+        modal.style.display = 'flex';
+    }
+}
+function closeShippingModal() {
+    var modal = document.getElementById('shippingPolicyModal');
+    if (modal) {
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+    }
+}
+
+function openReturnsModal() {
+    var modal = document.getElementById('returnsModal');
+    if (modal) {
+        modal.classList.add('active');
+        modal.style.display = 'flex';
+    }
+}
+function closeReturnsModal() {
+    var modal = document.getElementById('returnsModal');
+    if (modal) {
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+    }
+}
+
+function handleContactSubmit(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    var successBox = document.getElementById('contactSuccessMsg');
+    if (successBox) successBox.style.display = 'flex';
+    var form = document.getElementById('drxContactForm');
+    if (form) form.reset();
+    setTimeout(function() {
+        if (successBox) successBox.style.display = 'none';
+    }, 4000);
+    return false;
+}
+
+// Click outside overlay to close modal
+document.addEventListener('click', function(e) {
+    if (e.target && e.target.classList && e.target.classList.contains('modal-overlay')) {
+        e.target.classList.remove('active');
+        e.target.style.display = 'none';
+    }
+});
 
 function toggleDrxChat() {
     var box = document.getElementById('drxChatBox');

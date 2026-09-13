@@ -119,9 +119,9 @@
 	   -------------------------------------------------------------------------- */
 	function initEventHandlers() {
 		// Close modal on click outside
-		$('#variantModal').on('click', function (e) {
+		$('.modal-overlay').on('click', function (e) {
 			if (e.target === this) {
-				closeVariantModal();
+				$(this).removeClass('active').css('display', 'none');
 			}
 		});
 	}
@@ -699,5 +699,45 @@
 		});
 	};
 
+	/* --------------------------------------------------------------------------
+	   6. Customer Care Modals (Contact Us, Shipping Policy, Returns & Exchanges)
+	   -------------------------------------------------------------------------- */
+	window.openContactModal = function () {
+		$('#contactUsModal').addClass('active').css('display', 'flex');
+	};
+
+	window.closeContactModal = function () {
+		$('#contactUsModal').removeClass('active').css('display', 'none');
+		$('#contactSuccessMsg').hide();
+	};
+
+	window.openShippingModal = function () {
+		$('#shippingPolicyModal').addClass('active').css('display', 'flex');
+	};
+
+	window.closeShippingModal = function () {
+		$('#shippingPolicyModal').removeClass('active').css('display', 'none');
+	};
+
+	window.openReturnsModal = function () {
+		$('#returnsModal').addClass('active').css('display', 'flex');
+	};
+
+	window.closeReturnsModal = function () {
+		$('#returnsModal').removeClass('active').css('display', 'none');
+	};
+
+	window.handleContactSubmit = function (e) {
+		if (e && e.preventDefault) e.preventDefault();
+		$('#contactSuccessMsg').css('display', 'flex');
+		const form = document.getElementById('drxContactForm');
+		if (form) form.reset();
+		setTimeout(function () {
+			$('#contactSuccessMsg').fadeOut();
+		}, 4000);
+		return false;
+	};
+
 })(jQuery);
+
 
