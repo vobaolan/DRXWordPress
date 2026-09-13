@@ -44,3 +44,60 @@ body {
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 }
+
+/* ==========================================================================
+   DRX STORE SEARCH BAR FIX (CHỐNG TRÀN & KHÔNG ĐÈ ICON)
+   ========================================================================== */
+.store-search-container {
+	position: relative !important;
+	width: 100% !important;
+	margin-bottom: 28px !important;
+	display: flex !important;
+	align-items: center !important;
+}
+
+.store-search-input,
+input#searchInput.store-search-input,
+input[type="text"].store-search-input {
+	width: 100% !important;
+	height: 52px !important;
+	line-height: 52px !important;
+	padding-left: 56px !important;
+	padding-right: 20px !important;
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+	border: 1.5px solid #E2E8F0 !important;
+	border-radius: 12px !important;
+	font-size: 14.5px !important;
+	font-family: var(--drx-font-sans) !important;
+	background: #FFFFFF !important;
+	color: #0F172A !important;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02) !important;
+	box-sizing: border-box !important;
+	transition: all 0.25s ease !important;
+}
+
+.store-search-input:focus,
+input#searchInput.store-search-input:focus {
+	outline: none !important;
+	border-color: #0052FF !important;
+	box-shadow: 0 4px 16px rgba(0, 82, 255, 0.15) !important;
+}
+
+.store-search-input::placeholder {
+	color: #94A3B8 !important;
+}
+
+.search-icon,
+svg.search-icon {
+	position: absolute !important;
+	left: 18px !important;
+	top: 50% !important;
+	transform: translateY(-50%) !important;
+	width: 20px !important;
+	height: 20px !important;
+	color: #64748B !important;
+	pointer-events: none !important;
+	z-index: 10 !important;
+}
+
