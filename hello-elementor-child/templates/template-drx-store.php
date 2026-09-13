@@ -35,6 +35,11 @@ if ($products_query->have_posts()) {
         $hover_img = drx_store_get_image($product, true);
         $raw_price = drx_normalize_vnd_price($product->get_price());
 
+        // Bỏ qua các sản phẩm ghost/rác có giá 0đ hoặc không hợp lệ
+        if ($raw_price <= 0) {
+            continue;
+        }
+
         $products_list[] = array(
             'id'        => $p_id,
             'name'      => $product->get_name(),

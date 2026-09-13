@@ -983,3 +983,66 @@ function drx_auto_sync_authentic_products() {
     update_option($sync_key, 'yes');
 }
 add_action('init', 'drx_auto_sync_authentic_products', 10);
+
+/**
+ * Tự động dọn dẹp các sản phẩm rác (Ghost products) có giá 0đ và không có trong wp-admin
+ */
+function drx_cleanup_zero_price_ghost_products() {
+    $cleanup_key = '_drx_ghost_products_cleaned_v3';
+    if (get_option($cleanup_key) === 'yes') {
+        return;
+    }
+
+    if (!class_exists('WooCommerce')) {
+        return;
+    }
+
+    $ghost_query = new WP_Query(array(
+        'post_type'      => 'product',
+        'posts_per_page' => -1,
+        'post_status'    => 'any',
+        'meta_query'     => array(
+            'relation' => 'OR',
+            array(
+                'key'     => '_price',
+                'value'   => 0,
+                'compare' => '<=',
+                'type'    => 'NUMERIC'
+            ),
+            array(
+                'key'     => '_price',
+                'value'   => '',
+                'compare' => '='
+            ),
+            array(
+                'key'     => '_price',
+                'compare' => 'NOT EXISTS'
+            )
+        )
+    ));
+
+    if ($ghost_query->have_posts()) {
+        while ($ghost_query->have_posts()) {
+            $ghost_query->the_post();
+            $post_id = get_the_ID();
+            $sku = get_post_meta($post_id, '_sku', true);
+            $has_thumb = has_post_thumbnail($post_id);
+
+            // Bảo vệ các sản phẩm chính hãng hoặc sản phẩm có hình ảnh hợp lệ
+            if (!empty($sku) && strpos($sku, 'DRX-') === 0) {
+                continue;
+            }
+            if ($has_thumb) {
+                continue;
+            }
+
+            // Xóa triệt để sản phẩm rác không có ảnh và giá 0đ
+            wp_delete_post($post_id, true);
+        }
+        wp_reset_postdata();
+    }
+
+    update_option($cleanup_key, 'yes');
+}
+add_action('init', 'drx_cleanup_zero_price_ghost_products', 20);
+
