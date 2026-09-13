@@ -164,15 +164,45 @@ function drx_ajax_get_product_details() {
     $short_desc = $product->get_short_description();
     $allow_custom_id = (strpos($desc, '[ALLOW_CUSTOM_ID]') !== false) || (strpos($short_desc, '[ALLOW_CUSTOM_ID]') !== false);
 
-    // Lấy danh sách biến thể nếu là Variable Product
+    $product_name_upper = strtoupper($product->get_name());
+    
+    // Kiểm tra loại sản phẩm: Pad chuột vs Quần áo vs Phụ kiện
+    $is_mousepad = (strpos($product_name_upper, 'PAD') !== false) || (strpos($product_name_upper, 'MOUSEPAD') !== false) || (strpos($product_name_upper, 'LÓT CHUỘT') !== false);
+    $is_accessory = (strpos($product_name_upper, 'KEYCAP') !== false) || (strpos($product_name_upper, 'TUMBLER') !== false) || (strpos($product_name_upper, 'BÌNH') !== false) || (strpos($product_name_upper, 'BACKPACK') !== false) || (strpos($product_name_upper, 'BALO') !== false) || (strpos($product_name_upper, 'LIGHTSTICK') !== false) || (strpos($product_name_upper, 'SNAPBACK') !== false) || (strpos($product_name_upper, 'NÓN') !== false) || (strpos($product_name_upper, 'BANDANA') !== false) || (strpos($product_name_upper, 'POSTER') !== false);
+    
+    $is_apparel = !$is_mousepad && !$is_accessory && (
+        (strpos($product_name_upper, 'JERSEY') !== false) ||
+        (strpos($product_name_upper, 'T-SHIRT') !== false) ||
+        (strpos($product_name_upper, 'SHIRT') !== false) ||
+        (strpos($product_name_upper, 'TEE') !== false) ||
+        (strpos($product_name_upper, 'JACKET') !== false) ||
+        (strpos($product_name_upper, 'WINDBREAKER') !== false) ||
+        (strpos($product_name_upper, 'HOODIE') !== false) ||
+        (strpos($product_name_upper, 'PANTS') !== false) ||
+        (strpos($product_name_upper, 'JUMPER') !== false) ||
+        (strpos($product_name_upper, 'POLO') !== false) ||
+        (strpos($product_name_upper, 'UNIFORM') !== false) ||
+        (strpos($product_name_upper, 'ÁO') !== false) ||
+        (strpos($product_name_upper, 'QUẦN') !== false) ||
+        (strpos($product_name_upper, 'COLLECTION') !== false)
+    );
+
+    // Lấy danh sách biến thể
     $variants_data = array();
     $colors = array();
     $sizes = array();
 
+    if ($is_mousepad || $is_accessory) {
+        // Pad chuột và phụ kiện: KHÔNG CHỌN SIZE
+        $sizes = array();
+    } else if ($is_apparel) {
+        // Toàn bộ quần áo: CHO CHỌN SIZE M, L, XL (CÙNG GIÁ)
+        $sizes = array('M', 'L', 'XL');
+    }
+
+    // Nếu sản phẩm có biến thể thực tế trong CSDL
     if ($product->is_type('variable')) {
         $available_variations = $product->get_available_variations();
-        
-        // Nếu đã có biến thể con
         if (!empty($available_variations)) {
             foreach ($available_variations as $var) {
                 $v_id = $var['variation_id'];
@@ -183,75 +213,40 @@ function drx_ajax_get_product_details() {
                 $s_val = isset($var['attributes']['attribute_pa_size']) ? $var['attributes']['attribute_pa_size'] : (isset($var['attributes']['attribute_size']) ? $var['attributes']['attribute_size'] : '');
 
                 if ($c_val && !in_array(strtoupper($c_val), $colors)) $colors[] = strtoupper($c_val);
-                if ($s_val && !in_array(strtoupper($s_val), $sizes)) $sizes[] = strtoupper($s_val);
+                if (!$is_mousepad && !$is_accessory && $s_val && !in_array(strtoupper($s_val), $sizes)) {
+                    $sizes[] = strtoupper($s_val);
+                }
 
                 $variants_data[] = array(
                     'id'       => $v_id,
-                    'price'    => $v_obj && $v_obj->get_price() !== '' ? (float)$v_obj->get_price() : (float)$product->get_price(),
+                    'price'    => (float)$product->get_price(), // Đảm bảo cùng giá
                     'stock'    => $var['is_in_stock'] ? 99 : 0,
                     'color'    => strtoupper($c_val),
-                    'size'     => strtoupper($s_val),
+                    'size'     => ($is_mousepad || $is_accessory) ? '' : strtoupper($s_val),
                     'images'   => $v_img
                 );
             }
         }
-        
-        // Trích xuất thêm từ Product Attributes nếu danh sách biến thể rỗng
-        $attributes = $product->get_attributes();
-        foreach ($attributes as $attr_name => $attr_obj) {
-            $attr_label = strtolower($attr_obj->get_name());
-            $opts = array();
-            if ($attr_obj->is_taxonomy()) {
-                $terms = wc_get_product_terms($product_id, $attr_obj->get_name(), array('fields' => 'names'));
-                $opts = !is_wp_error($terms) ? $terms : array();
-            } else {
-                $raw = $attr_obj->get_options();
-                if (is_array($raw)) {
-                    $opts = $raw;
-                } else if (is_string($raw)) {
-                    $opts = explode('|', $raw);
-                }
-            }
-            foreach ($opts as $o) {
-                $val = strtoupper(trim($o));
-                if (empty($val)) continue;
-                if (strpos($attr_label, 'color') !== false || strpos($attr_label, 'màu') !== false) {
-                    if (!in_array($val, $colors)) $colors[] = $val;
-                }
-                if (strpos($attr_label, 'size') !== false || strpos($attr_label, 'kích') !== false) {
-                    if (!in_array($val, $sizes)) $sizes[] = $val;
-                }
-            }
-        }
+    }
 
-        // Tự động sắp xếp Size theo chuẩn: S, M, L, XL, 2XL, 3XL
-        $size_priority = array('S' => 1, 'M' => 2, 'L' => 3, 'XL' => 4, '2XL' => 5, '3XL' => 6);
-        usort($sizes, function($a, $b) use ($size_priority) {
-            $pa = isset($size_priority[$a]) ? $size_priority[$a] : 99;
-            $pb = isset($size_priority[$b]) ? $size_priority[$b] : 99;
-            return $pa - $pb;
-        });
-
-        // Nếu có colors/sizes nhưng chưa có variations_data, tạo dummy variation objects
-        if (empty($variants_data) && (!empty($colors) || !empty($sizes))) {
-            $c_loop = !empty($colors) ? $colors : array('');
-            $s_loop = !empty($sizes) ? $sizes : array('');
-            foreach ($c_loop as $c) {
-                foreach ($s_loop as $s) {
-                    $variants_data[] = array(
-                        'id'     => 0,
-                        'price'  => (float)$product->get_price(),
-                        'stock'  => 99,
-                        'color'  => $c,
-                        'size'   => $s,
-                        'images' => $images
-                    );
-                }
+    // Nếu là quần áo và chưa có variants_data, tạo biến thể cho các size M, L, XL (CÙNG GIÁ)
+    if ($is_apparel && empty($variants_data)) {
+        $c_loop = !empty($colors) ? $colors : array('');
+        foreach ($c_loop as $c) {
+            foreach ($sizes as $s) {
+                $variants_data[] = array(
+                    'id'     => 0,
+                    'price'  => (float)$product->get_price(), // Cùng giá
+                    'stock'  => 99,
+                    'color'  => $c,
+                    'size'   => $s,
+                    'images' => $images
+                );
             }
         }
     }
 
-    // Nếu là Simple Product hoặc chưa có biến thể
+    // Nếu là Simple Product hoặc Pad chuột / Phụ kiện
     if (empty($variants_data)) {
         $variants_data[] = array(
             'id'       => 0,
@@ -271,6 +266,8 @@ function drx_ajax_get_product_details() {
         'price_html'       => $product->get_price_html(),
         'description'      => $desc,
         'allow_custom_id'  => $allow_custom_id,
+        'is_apparel'       => $is_apparel,
+        'is_mousepad'      => $is_mousepad,
         'images'           => $images,
         'colors'           => $colors,
         'sizes'            => $sizes,
@@ -299,6 +296,8 @@ function drx_ajax_add_to_cart() {
     $variation_id = isset($_POST['variation_id']) ? absint($_POST['variation_id']) : 0;
     $quantity = isset($_POST['quantity']) ? absint($_POST['quantity']) : 1;
     $custom_id = isset($_POST['custom_id']) ? sanitize_text_field(trim($_POST['custom_id'])) : '';
+    $size = isset($_POST['size']) ? sanitize_text_field(trim($_POST['size'])) : '';
+    $color = isset($_POST['color']) ? sanitize_text_field(trim($_POST['color'])) : '';
 
     if (!$product_id) {
         wp_send_json_error(array('message' => 'Invalid Product ID.'));
@@ -325,8 +324,14 @@ function drx_ajax_add_to_cart() {
     $cart_item_data = array();
     if (!empty($custom_id)) {
         $cart_item_data['drx_custom_id'] = $custom_id;
-        $cart_item_data['unique_key'] = md5(microtime() . rand());
     }
+    if (!empty($size)) {
+        $cart_item_data['drx_size'] = $size;
+    }
+    if (!empty($color)) {
+        $cart_item_data['drx_color'] = $color;
+    }
+    $cart_item_data['unique_key'] = md5(microtime() . rand());
 
     $variation_attr = array();
 
@@ -393,7 +398,9 @@ function drx_ajax_add_to_cart() {
             'variation'    => $variation_attr,
             'quantity'     => $quantity,
             'data'         => $final_data,
-            'drx_custom_id'=> $custom_id
+            'drx_custom_id'=> $custom_id,
+            'drx_size'     => $size,
+            'drx_color'    => $color
         );
         WC()->cart->set_session();
         WC()->cart->calculate_totals();
@@ -415,6 +422,7 @@ function drx_ajax_add_to_cart() {
             if (!$img) {
                 $img = drx_store_get_image($_prod, false);
             }
+            $item_size = isset($item['drx_size']) ? $item['drx_size'] : (isset($item['variation']['attribute_pa_size']) ? $item['variation']['attribute_pa_size'] : '');
             $items[] = array(
                 'key'          => $key,
                 'product_name' => $_prod->get_name(),
@@ -422,7 +430,8 @@ function drx_ajax_add_to_cart() {
                 'quantity'     => $item['quantity'],
                 'subtotal'     => wc_price($_prod->get_price() * $item['quantity']),
                 'image'        => $img ?: wc_placeholder_img_src(),
-                'custom_id'    => isset($item['drx_custom_id']) ? $item['drx_custom_id'] : ''
+                'custom_id'    => isset($item['drx_custom_id']) ? $item['drx_custom_id'] : '',
+                'size'         => $item_size
             );
         }
 
@@ -438,6 +447,23 @@ function drx_ajax_add_to_cart() {
 }
 add_action('wp_ajax_drx_add_to_cart', 'drx_ajax_add_to_cart');
 add_action('wp_ajax_nopriv_drx_add_to_cart', 'drx_ajax_add_to_cart');
+
+// Hiển thị Size và Custom ID ở trang Checkout & Hóa đơn
+add_filter('woocommerce_get_item_data', function($item_data, $cart_item) {
+    if (!empty($cart_item['drx_size'])) {
+        $item_data[] = array(
+            'key'   => __('Size', 'hello-elementor-child'),
+            'value' => esc_html($cart_item['drx_size'])
+        );
+    }
+    if (!empty($cart_item['drx_custom_id'])) {
+        $item_data[] = array(
+            'key'   => __('Custom Embroidered ID', 'hello-elementor-child'),
+            'value' => esc_html($cart_item['drx_custom_id'])
+        );
+    }
+    return $item_data;
+}, 10, 2);
 
 /**
  * Helper lấy URL Checkout an toàn tuyệt đối, bảo toàn đúng host và port (ví dụ: localhost:10016)

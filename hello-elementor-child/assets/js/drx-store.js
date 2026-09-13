@@ -158,8 +158,8 @@
 			success: function (res) {
 				if (res.success && res.data) {
 					currentProductData = res.data;
-					selectedColor = currentProductData.colors && currentProductData.colors.length === 1 ? currentProductData.colors[0] : null;
-					selectedSize = currentProductData.sizes && currentProductData.sizes.length === 1 ? currentProductData.sizes[0] : null;
+					selectedColor = currentProductData.colors && currentProductData.colors.length > 0 ? currentProductData.colors[0] : null;
+					selectedSize = currentProductData.sizes && currentProductData.sizes.length > 0 ? currentProductData.sizes[0] : null;
 					currentQty = 1;
 					matchingVariant = null;
 
@@ -387,6 +387,8 @@
 				variation_id: variationId,
 				quantity: currentQty,
 				custom_id: customId,
+				size: selectedSize || '',
+				color: selectedColor || '',
 				security: ajaxNonce
 			},
 			success: function (res) {
@@ -446,7 +448,8 @@
 				<img src="${item.image}" class="cart-item-img" alt="${item.product_name}">
 				<div class="cart-item-details">
 					<div class="cart-item-title">${item.product_name}</div>
-					${item.custom_id ? `<div class="cart-item-meta" style="color: var(--accent); font-weight:600;">Custom ID: ${item.custom_id}</div>` : ''}
+					${item.size ? `<div class="cart-item-meta" style="color: #475569; font-size: 12px; font-weight: 600; margin-top: 2px;">Size: ${item.size}</div>` : ''}
+					${item.custom_id ? `<div class="cart-item-meta" style="color: var(--accent); font-size: 12px; font-weight: 600; margin-top: 2px;">Custom ID: ${item.custom_id}</div>` : ''}
 					<div class="cart-item-bottom">
 						<span style="font-size: 13px; color: var(--text-muted);">Qty: ${item.quantity}</span>
 						<span style="font-weight: 700; color: var(--accent); font-size: 14px;">${item.subtotal}</span>

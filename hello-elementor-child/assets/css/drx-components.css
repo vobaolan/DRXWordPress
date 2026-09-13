@@ -475,10 +475,10 @@ main, .shop-main-wrapper {
 /* Search Bar */
 .store-search-input {
 	width: 100%;
-	padding: 16px 24px 16px 48px;
-	border: 1px solid var(--border-color);
+	padding: 14px 20px 14px 50px !important;
+	border: 1.5px solid var(--border-color);
 	border-radius: 12px;
-	font-size: 15px;
+	font-size: 14.5px;
 	font-family: var(--font-sans);
 	background: #FFFFFF;
 	color: var(--text-primary);
@@ -488,19 +488,20 @@ main, .shop-main-wrapper {
 .store-search-input:focus {
 	outline: none;
 	border-color: var(--accent);
-	box-shadow: 0 4px 16px rgba(0, 82, 255, 0.1);
+	box-shadow: 0 4px 16px rgba(0, 82, 255, 0.12);
 	transform: translateY(-1px);
 }
 .store-search-input::placeholder {
-	color: var(--text-muted);
+	color: #94A3B8;
 }
 .search-icon {
 	position: absolute;
-	left: 16px;
+	left: 18px !important;
 	top: 50%;
 	transform: translateY(-50%);
-	color: var(--text-muted);
+	color: #64748B;
 	pointer-events: none;
+	z-index: 2;
 	transition: color 0.3s;
 }
 .store-search-input:focus + .search-icon {

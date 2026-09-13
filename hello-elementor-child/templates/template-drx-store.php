@@ -202,9 +202,9 @@ $site_logo_url = $custom_logo_id ? wp_get_attachment_image_url($custom_logo_id, 
         <!-- SHOP CONTENT -->
         <section class="shop-content">
             <!-- SEARCH BAR -->
-            <div class="store-search-container" style="margin-bottom: 24px; position: relative;">
-                <input type="text" id="searchInput" class="store-search-input" placeholder="<?php esc_attr_e('Search products...', 'hello-elementor-child'); ?>" onkeyup="handleSearch(this.value)" autocomplete="off">
-                <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <div class="store-search-container" style="margin-bottom: 28px; position: relative; width: 100%;">
+                <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 18px; top: 50%; transform: translateY(-50%); pointer-events: none; z-index: 2;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="searchInput" class="store-search-input" placeholder="<?php esc_attr_e('Search products...', 'hello-elementor-child'); ?>" onkeyup="handleSearch(this.value)" autocomplete="off" style="width: 100%; padding: 14px 20px 14px 50px !important; border: 1.5px solid #E2E8F0; border-radius: 12px; font-size: 14.5px; font-family: var(--font-sans); outline: none; background: #FFFFFF; color: #0F172A; box-shadow: 0 2px 8px rgba(0,0,0,0.02); transition: all 0.25s ease;">
             </div>
 
             <!-- PRODUCT GRID -->
