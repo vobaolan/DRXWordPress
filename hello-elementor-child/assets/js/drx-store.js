@@ -727,17 +727,6 @@
 		$('#returnsModal').removeClass('active').css('display', 'none');
 	};
 
-	window.handleContactSubmit = function (e) {
-		if (e && e.preventDefault) e.preventDefault();
-		$('#contactSuccessMsg').css('display', 'flex');
-		const form = document.getElementById('drxContactForm');
-		if (form) form.reset();
-		setTimeout(function () {
-			$('#contactSuccessMsg').fadeOut();
-		}, 4000);
-		return false;
-	};
-
 })(jQuery);
 
 

@@ -334,36 +334,16 @@ $site_logo_url = $custom_logo_id ? wp_get_attachment_image_url($custom_logo_id, 
             </button>
         </div>
 
-        <!-- Quick Contact Message Form -->
-        <form id="drxContactForm" onsubmit="handleContactSubmit(event)">
-            <div style="margin-bottom: 14px;">
-                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">HỌ VÀ TÊN <span style="color:#EF4444;">*</span></label>
-                <input type="text" id="contactName" required placeholder="Nhập họ và tên của bạn" style="width: 100%; padding: 12px 14px; border: 1.5px solid #E2E8F0; border-radius: 10px; font-family: inherit; font-size: 14px; outline: none; background: #fff; box-sizing: border-box;">
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
-                <div>
-                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">SỐ ĐIỆN THOẠI <span style="color:#EF4444;">*</span></label>
-                    <input type="tel" id="contactPhone" required placeholder="098..." style="width: 100%; padding: 12px 14px; border: 1.5px solid #E2E8F0; border-radius: 10px; font-family: inherit; font-size: 14px; outline: none; background: #fff; box-sizing: border-box;">
-                </div>
-                <div>
-                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">EMAIL</label>
-                    <input type="email" id="contactEmail" placeholder="name@email.com" style="width: 100%; padding: 12px 14px; border: 1.5px solid #E2E8F0; border-radius: 10px; font-family: inherit; font-size: 14px; outline: none; background: #fff; box-sizing: border-box;">
-                </div>
-            </div>
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">NỘI DUNG YÊU CẦU <span style="color:#EF4444;">*</span></label>
-                <textarea id="contactMsg" required rows="3" placeholder="Nhập câu hỏi hoặc yêu cầu hỗ trợ đơn hàng..." style="width: 100%; padding: 12px 14px; border: 1.5px solid #E2E8F0; border-radius: 10px; font-family: inherit; font-size: 14px; outline: none; background: #fff; box-sizing: border-box; resize: vertical;"></textarea>
-            </div>
+        <!-- Location & Showroom Info -->
+        <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px; margin-bottom: 24px;">
+            <div style="font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase;">SHOWROOM & ĐỊA CHỈ TRẢI NGHIỆM</div>
+            <div style="font-weight: 700; font-size: 13.5px; color: #0F172A; margin-top: 4px;">DRX Official Store Hub - TP. Hồ Chí Minh</div>
+            <div style="font-size: 12px; color: #64748B; margin-top: 2px;">Thời gian mở cửa: Thứ 2 - Chủ Nhật (08:30 - 22:00)</div>
+        </div>
 
-            <div id="contactSuccessMsg" style="display: none; padding: 12px 16px; background: #ECFDF5; border: 1px solid #6EE7B7; border-radius: 10px; color: #065F46; font-size: 13.5px; font-weight: 600; margin-bottom: 16px; align-items: center; gap: 8px;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"></path></svg>
-                <span>Cảm ơn bạn! Yêu cầu hỗ trợ đã được gửi thành công. Đội ngũ DRX sẽ liên hệ trong 15 phút.</span>
-            </div>
-
-            <button type="submit" id="btnContactSubmit" style="width: 100%; padding: 15px; background: #0052FF; color: white; border: none; border-radius: 12px; font-weight: 800; font-size: 14px; letter-spacing: 0.8px; cursor: pointer; box-shadow: 0 8px 20px rgba(0,82,255,0.3); transition: all 0.25s;">
-                GỬI YÊU CẦU HỖ TRỢ
-            </button>
-        </form>
+        <button onclick="closeContactModal()" style="width: 100%; padding: 14px; background: #F1F5F9; color: #0F172A; border: 1.5px solid #CBD5E1; border-radius: 12px; font-weight: 700; font-size: 13.5px; cursor: pointer; transition: all 0.2s;">
+            ĐÃ HIỂU & ĐÓNG
+        </button>
     </div>
 </div>
 
@@ -657,17 +637,6 @@ function closeReturnsModal() {
     }
 }
 
-function handleContactSubmit(e) {
-    if (e && e.preventDefault) e.preventDefault();
-    var successBox = document.getElementById('contactSuccessMsg');
-    if (successBox) successBox.style.display = 'flex';
-    var form = document.getElementById('drxContactForm');
-    if (form) form.reset();
-    setTimeout(function() {
-        if (successBox) successBox.style.display = 'none';
-    }, 4000);
-    return false;
-}
 
 // Click outside overlay to close modal
 document.addEventListener('click', function(e) {
