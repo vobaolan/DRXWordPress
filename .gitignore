@@ -2,11 +2,7 @@
 # WordPress & DRX Project .gitignore
 # ==============================================================================
 
-# Readme and markdown docs
-README.md
-*.md
-
-# Lecture, Notes, Skills, and Docs directories
+# Document & Presentation files
 BaiGiang/
 baigiang/
 skills/
@@ -50,6 +46,9 @@ desktop.ini
 *.bak
 *.swp
 *~
+*.zip
+*.tar.gz
+*.rar
 .cache/
 
 # Node modules & build artifacts
